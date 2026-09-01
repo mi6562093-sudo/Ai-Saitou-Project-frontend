@@ -22,7 +22,7 @@ function App() {
       const data = await res.json()
       setRiwayat(prev => [...prev, { peran: "ai", isi: data.jawaban }])
     } catch (err) {
-      setRiwayat(prev => [...prev, { peran: "ai", isi: "Error: gagal menghubungi backend." }])
+      setRiwayat(prev => [...prev, { peran: "ai", isi: "Error: " + err.message }])
     } finally {
       setLoading(false)
     }
