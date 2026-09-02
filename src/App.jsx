@@ -104,7 +104,7 @@ function App() {
   if (!session) {
     return (
       <div style={{ maxWidth: 400, margin: '60px auto', padding: 20, fontFamily: 'sans-serif', textAlign: 'center' }}>
-        <h1>AI Agent Pribadi</h1>
+        <h1>Saitou-AI</h1>
         <p style={{ color: '#888', marginBottom: 24 }}>Masuk untuk mulai mengobrol</p>
         <button
           onClick={handleGoogleLogin}
@@ -132,7 +132,7 @@ function App() {
   return (
     <div style={{ maxWidth: 500, margin: '20px auto', padding: 20, fontFamily: 'sans-serif' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>AI Agent Pribadi</h1>
+        <h1>Saitou-AI</h1>
         <div style={{ display: 'flex', gap: 8 }}>
           <button onClick={toggleMemori}>{showMemori ? 'Tutup Memori' : 'Kelola Memori'}</button>
           <button onClick={handleLogout}>Logout</button>
