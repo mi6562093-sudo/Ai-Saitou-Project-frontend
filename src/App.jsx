@@ -1,66 +1,185 @@
-import { useState } from 'react'
-import './App.css'
+import { useState, useEffect } from 'react'
+import { createClient } from '@supabase/supabase-js'
 
-const USER_ID = "f6a5eee3-1c47-47bb-aae0-c424c3537398"
 const BACKEND_URL = "https://ai-saitou-project-production.up.railway.app"
+const supabase = createClient(
+  "https://kvhoirxniciekdctsxta.supabase.co",
+  "sb_publishable_XEnH5zPGF0xG48FuKnC3Wg_jWXKKzgA"
+)
 
 function App() {
-  const [pesan, setPesan] = useState("")
-  const [riwayat, setRiwayat] = useState([])
-  const [loading, setLoading] = useState(false)
+  const [session, setSession] = useState(null)
+  const [checkingSession, setCheckingSession] = useState(true)
 
-  const kirimPesan = async () => {
-    if (!pesan.trim()) return
-    const pesanUser = pesan
-    setRiwayat(prev => [...prev, { peran: "user", isi: pesanUser }])
-    setPesan("")
-    setLoading(true)
+  const [messages, setMessages] = useState([])
+  const [input, setInput] = useState('')
+  const [chatLoading, setChatLoading] = useState(false)
 
+  const [showMemori, setShowMemori] = useState(false)
+  const [memoriList, setMemoriList] = useState([])
+  const [loadingMemori, setLoadingMemori] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session)
+      setCheckingSession(false)
+    })
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      setSession(newSession)
+    })
+
+    return () => listener.subscription.unsubscribe()
+  }, [])
+
+  async function handleGoogleLogin() {
+    await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: window.location.origin,
+      },
+    })
+  }
+
+  async function handleLogout() {
+    await supabase.auth.signOut()
+    setMessages([])
+  }
+
+  async function sendMessage() {
+    if (!input.trim()) return
+    const pesanUser = input
+    setInput('')
+    setMessages((prev) => [...prev, { role: 'user', text: pesanUser }])
+    setChatLoading(true)
     try {
-      const url = `${BACKEND_URL}/chat?pesan=${encodeURIComponent(pesanUser)}&user_id=${encodeURIComponent(USER_ID)}`
-      const res = await fetch(url, { method: "POST" })
+      const res = await fetch(
+        `${BACKEND_URL}/chat?pesan=${encodeURIComponent(pesanUser)}&user_id=${encodeURIComponent(session.user.id)}`,
+        { method: 'POST' }
+      )
       const data = await res.json()
-      setRiwayat(prev => [...prev, { peran: "ai", isi: data.jawaban }])
+      setMessages((prev) => [...prev, { role: 'ai', text: data.jawaban || 'Tidak ada jawaban' }])
     } catch (err) {
-      setRiwayat(prev => [...prev, { peran: "ai", isi: "Error: " + err.message }])
+      setMessages((prev) => [...prev, { role: 'ai', text: 'Error: gagal menghubungi backend' }])
     } finally {
-      setLoading(false)
+      setChatLoading(false)
     }
   }
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Enter") kirimPesan()
+  async function ambilMemori() {
+    setLoadingMemori(true)
+    try {
+      const res = await fetch(`${BACKEND_URL}/memori/${encodeURIComponent(session.user.id)}`)
+      const data = await res.json()
+      setMemoriList(Array.isArray(data) ? data : [])
+    } catch (err) {
+      setMemoriList([])
+    } finally {
+      setLoadingMemori(false)
+    }
+  }
+
+  function toggleMemori() {
+    const akanTampil = !showMemori
+    setShowMemori(akanTampil)
+    if (akanTampil) ambilMemori()
+  }
+
+  async function hapusMemoriItem(memoriId) {
+    try {
+      await fetch(
+        `${BACKEND_URL}/memori/${encodeURIComponent(session.user.id)}/${encodeURIComponent(memoriId)}`,
+        { method: 'DELETE' }
+      )
+      setMemoriList((prev) => prev.filter((m) => m.id !== memoriId))
+    } catch (err) {
+      alert('Gagal menghapus memori')
+    }
+  }
+
+  if (checkingSession) {
+    return <div style={{ textAlign: 'center', marginTop: 50 }}>Memuat...</div>
+  }
+
+  if (!session) {
+    return (
+      <div style={{ maxWidth: 400, margin: '60px auto', padding: 20, fontFamily: 'sans-serif', textAlign: 'center' }}>
+        <h1>AI Agent Pribadi</h1>
+        <p style={{ color: '#888', marginBottom: 24 }}>Masuk untuk mulai mengobrol</p>
+        <button
+          onClick={handleGoogleLogin}
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 10,
+            width: '100%',
+            padding: '12px 20px',
+            fontSize: 16,
+            borderRadius: 8,
+            border: '1px solid #ccc',
+            background: 'white',
+            color: '#333',
+            cursor: 'pointer',
+          }}
+        >
+          Login dengan Google
+        </button>
+      </div>
+    )
   }
 
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: 16, fontFamily: "sans-serif" }}>
-      <h2>AI Agent Pribadi</h2>
-      <div style={{ border: "1px solid #ccc", borderRadius: 8, padding: 12, minHeight: 300, marginBottom: 12 }}>
-        {riwayat.map((m, i) => (
-          <div key={i} style={{ textAlign: m.peran === "user" ? "right" : "left", margin: "8px 0" }}>
+    <div style={{ maxWidth: 500, margin: '20px auto', padding: 20, fontFamily: 'sans-serif' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h1>AI Agent Pribadi</h1>
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button onClick={toggleMemori}>{showMemori ? 'Tutup Memori' : 'Kelola Memori'}</button>
+          <button onClick={handleLogout}>Logout</button>
+        </div>
+      </div>
+      <p style={{ color: '#888', marginTop: -10 }}>{session.user.email}</p>
+
+      {showMemori && (
+        <div style={{ border: '1px solid #ccc', borderRadius: 10, padding: 15, marginBottom: 10 }}>
+          <h3 style={{ marginTop: 0 }}>Memori Tersimpan</h3>
+          {loadingMemori && <p>Memuat memori...</p>}
+          {!loadingMemori && memoriList.length === 0 && <p style={{ color: '#888' }}>Belum ada memori tersimpan.</p>}
+          {!loadingMemori && memoriList.map((m) => (
+            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', padding: '8px 0' }}>
+              <span style={{ flex: 1, marginRight: 10 }}>{m.isi}</span>
+              <button onClick={() => hapusMemoriItem(m.id)} style={{ color: 'red', cursor: 'pointer' }}>Hapus</button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div style={{ border: '1px solid #ccc', borderRadius: 10, padding: 15, minHeight: 300, marginBottom: 10 }}>
+        {messages.map((m, i) => (
+          <div key={i} style={{ textAlign: m.role === 'user' ? 'right' : 'left', margin: '8px 0' }}>
             <span style={{
-              display: "inline-block",
-              padding: "6px 12px",
+              display: 'inline-block',
+              padding: '8px 12px',
               borderRadius: 12,
-              background: m.peran === "user" ? "#0084ff" : "#e4e6eb",
-              color: m.peran === "user" ? "#fff" : "#000",
-              maxWidth: "80%"
+              background: m.role === 'user' ? '#3b82f6' : '#e5e7eb',
+              color: m.role === 'user' ? 'white' : 'black',
+              maxWidth: '80%',
             }}>
-              {m.isi}
+              {m.text}
             </span>
           </div>
         ))}
-        {loading && <div>AI sedang mengetik...</div>}
+        {chatLoading && <p>Mengetik...</p>}
       </div>
-      <div style={{ display: "flex", gap: 8 }}>
+      <div style={{ display: 'flex', gap: 8 }}>
         <input
-          value={pesan}
-          onChange={(e) => setPesan(e.target.value)}
-          onKeyDown={handleKeyDown}
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
           placeholder="Tulis pesan..."
-          style={{ flex: 1, padding: 8 }}
+          style={{ flex: 1, padding: 10, fontSize: 16 }}
         />
-        <button onClick={kirimPesan} disabled={loading}>Kirim</button>
+        <button onClick={sendMessage} disabled={chatLoading}>Kirim</button>
       </div>
     </div>
   )
