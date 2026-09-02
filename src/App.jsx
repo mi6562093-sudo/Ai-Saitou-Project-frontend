@@ -24,13 +24,44 @@ function App() {
       setSession(data.session)
       setCheckingSession(false)
     })
-
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
       setSession(newSession)
     })
-
     return () => listener.subscription.unsubscribe()
   }, [])
+
+  useEffect(() => {
+    if (!session) return
+
+    supabase.realtime.setAuth(session.access_token)
+
+    const channel = supabase
+      .channel('memori-realtime')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'memori', filter: `user_id=eq.${session.user.id}` },
+        (payload) => {
+          console.log('Realtime INSERT diterima:', payload.new)
+          setMemoriList((prev) => {
+            if (prev.some((m) => m.id === payload.new.id)) return prev
+            return [...prev, payload.new]
+          })
+        }
+      )
+      .on(
+        'postgres_changes',
+        { event: 'DELETE', schema: 'public', table: 'memori', filter: `user_id=eq.${session.user.id}` },
+        (payload) => {
+          console.log('Realtime DELETE diterima:', payload.old)
+          setMemoriList((prev) => prev.filter((m) => m.id !== payload.old.id))
+        }
+      )
+      .subscribe((status) => {
+        console.log('Status channel realtime:', status)
+      })
+
+    return () => supabase.removeChannel(channel)
+  }, [session])
 
   async function handleGoogleLogin() {
     await supabase.auth.signInWithOAuth({
