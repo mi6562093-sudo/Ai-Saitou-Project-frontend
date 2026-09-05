@@ -268,7 +268,7 @@ function App() {
         lineHeight: 1.6,
       }}>
         <p style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>
-          💡📈 Dukung Pengembangan Saitou-AI
+          💡📈 Dukung Pengembangan <span style={{ whiteSpace: 'nowrap' }}>Saitou-AI</span>
         </p>
         <p style={{ marginBottom: 8 }}>
           Saitou-AI adalah proyek yang terus dikembangkan secara bertahap. Dukunganmu membantu membiayai server, API, keamanan, dan pengembangan fitur baru — supaya Saitou-AI bisa terus jadi lebih stabil, cerdas, dan mampu melakukan lebih banyak hal ke depannya.
