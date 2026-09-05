@@ -256,6 +256,41 @@ function App() {
         />
         <button onClick={sendMessage} disabled={chatLoading}>Kirim</button>
       </div>
+
+      <div style={{
+        marginTop: 24,
+        padding: 16,
+        borderRadius: 10,
+        border: '1px solid #333',
+        background: '#1a1a1a',
+        color: '#ddd',
+        fontSize: 14,
+        lineHeight: 1.6,
+      }}>
+        <p style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>
+          💡📈 Dukung Pengembangan Saitou-AI
+        </p>
+        <p style={{ marginBottom: 8 }}>
+          Saitou-AI adalah proyek yang terus dikembangkan secara bertahap. Dukunganmu membantu membiayai server, API, keamanan, dan pengembangan fitur baru — supaya Saitou-AI bisa terus jadi lebih stabil, cerdas, dan mampu melakukan lebih banyak hal ke depannya.
+        </p>
+        <p style={{ marginBottom: 12 }}>
+          Dukungan bersifat <strong>sukarela</strong>, sekecil apa pun sangat berarti — dan bukan cuma bantuan sesaat, tapi bagian dari pertumbuhan Saitou-AI ke depan. Supporter mendapat akses info perkembangan lebih awal dan kesempatan memberi masukan langsung.
+        </p>
+        <button style={{
+          padding: '10px 20px',
+          borderRadius: 8,
+          border: 'none',
+          background: '#3b82f6',
+          color: 'white',
+          fontWeight: 'bold',
+          cursor: 'pointer',
+        }}>
+          💡📈 Dukung Saitou-AI →
+        </button>
+        <p style={{ marginTop: 12, fontStyle: 'italic', fontSize: 13, color: '#999' }}>
+          Prioritas kami: stabilitas, keamanan, privasi data, lalu kemampuan. Terima kasih sudah jadi bagian dari perjalanan ini. 🚀
+        </p>
+      </div>
     </div>
   )
 }
