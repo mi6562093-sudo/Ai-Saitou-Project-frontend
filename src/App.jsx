@@ -227,14 +227,14 @@ function App() {
                   components={{
                     table: ({node, ...props}) => (
                       <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
-                        <table style={{ borderCollapse: 'collapse', minWidth: '100%' }} {...props} />
+                        <table style={{ borderCollapse: 'collapse', width: 'max-content' }} {...props} />
                       </div>
                     ),
                     th: ({node, ...props}) => (
-                      <th style={{ border: '1px solid #999', padding: '4px 8px', whiteSpace: 'nowrap' }} {...props} />
+                      <th style={{ border: '1px solid #999', padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top' }} {...props} />
                     ),
                     td: ({node, ...props}) => (
-                      <td style={{ border: '1px solid #999', padding: '4px 8px' }} {...props} />
+                      <td style={{ border: '1px solid #999', padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top' }} {...props} />
                     ),
                   }}
                 >{m.text}</ReactMarkdown>
