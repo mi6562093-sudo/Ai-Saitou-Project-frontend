@@ -240,6 +240,12 @@ function App() {
                     h2: ({node, ...props}) => <h2 style={{ color: 'black' }} {...props} />,
                     h3: ({node, ...props}) => <h3 style={{ color: 'black' }} {...props} />,
                     h4: ({node, ...props}) => <h4 style={{ color: 'black' }} {...props} />,
+                    pre: ({node, ...props}) => (
+                      <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', overflowWrap: 'break-word', maxWidth: '100%', background: '#000', color: '#0f0', padding: 8, borderRadius: 6 }} {...props} />
+                    ),
+                    code: ({node, ...props}) => (
+                      <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', overflowWrap: 'break-word' }} {...props} />
+                    ),
                   }}
                 >{m.text}</ReactMarkdown>
               ) : (
