@@ -113,8 +113,16 @@ function App() {
     setChatLoading(true)
     try {
       const res = await fetch(
-        `${BACKEND_URL}/chat?pesan=${encodeURIComponent(pesanUser)}&user_id=${encodeURIComponent(session.user.id)}&riwayat=${encodeURIComponent(JSON.stringify(riwayat))}`,
-        { method: 'POST' }
+        `${BACKEND_URL}/chat`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            pesan: pesanUser,
+            user_id: session.user.id,
+            riwayat: riwayat,
+          }),
+        }
       )
       const data = await res.json()
       setMessages((prev) => [...prev, { role: 'ai', text: data.jawaban || 'Tidak ada jawaban' }])
