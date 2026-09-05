@@ -103,11 +103,17 @@ function App() {
     if (!input.trim()) return
     const pesanUser = input
     setInput('')
+
+    const riwayat = messages.slice(-6).map((m) => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.text,
+    }))
+
     setMessages((prev) => [...prev, { role: 'user', text: pesanUser }])
     setChatLoading(true)
     try {
       const res = await fetch(
-        `${BACKEND_URL}/chat?pesan=${encodeURIComponent(pesanUser)}&user_id=${encodeURIComponent(session.user.id)}`,
+        `${BACKEND_URL}/chat?pesan=${encodeURIComponent(pesanUser)}&user_id=${encodeURIComponent(session.user.id)}&riwayat=${encodeURIComponent(JSON.stringify(riwayat))}`,
         { method: 'POST' }
       )
       const data = await res.json()
