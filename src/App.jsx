@@ -222,7 +222,22 @@ function App() {
               textAlign: 'left',
             }}>
               {m.role === 'ai' ? (
-                <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown>
+                <ReactMarkdown
+                  remarkPlugins={[remarkGfm]}
+                  components={{
+                    table: ({node, ...props}) => (
+                      <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
+                        <table style={{ borderCollapse: 'collapse', minWidth: '100%' }} {...props} />
+                      </div>
+                    ),
+                    th: ({node, ...props}) => (
+                      <th style={{ border: '1px solid #999', padding: '4px 8px', whiteSpace: 'nowrap' }} {...props} />
+                    ),
+                    td: ({node, ...props}) => (
+                      <td style={{ border: '1px solid #999', padding: '4px 8px' }} {...props} />
+                    ),
+                  }}
+                >{m.text}</ReactMarkdown>
               ) : (
                 m.text
               )}
