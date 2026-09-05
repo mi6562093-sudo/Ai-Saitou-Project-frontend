@@ -1,5 +1,8 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@supabase/supabase-js'
+import { mintaIzinDanAmbilToken, dengarkanNotifikasiForeground } from './firebase'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 const BACKEND_URL = "https://ai-saitou-project-production.up.railway.app"
 const supabase = createClient(
@@ -41,7 +44,6 @@ function App() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'memori', filter: `user_id=eq.${session.user.id}` },
         (payload) => {
-          console.log('Realtime INSERT diterima:', payload.new)
           setMemoriList((prev) => {
             if (prev.some((m) => m.id === payload.new.id)) return prev
             return [...prev, payload.new]
@@ -52,15 +54,35 @@ function App() {
         'postgres_changes',
         { event: 'DELETE', schema: 'public', table: 'memori', filter: `user_id=eq.${session.user.id}` },
         (payload) => {
-          console.log('Realtime DELETE diterima:', payload.old)
           setMemoriList((prev) => prev.filter((m) => m.id !== payload.old.id))
         }
       )
-      .subscribe((status) => {
-        console.log('Status channel realtime:', status)
-      })
+      .subscribe()
 
     return () => supabase.removeChannel(channel)
+  }, [session])
+
+  useEffect(() => {
+    if (!session) return
+
+    async function daftarkanNotifikasi() {
+      const token = await mintaIzinDanAmbilToken()
+      if (token) {
+        try {
+          await fetch(
+            `${BACKEND_URL}/device-token?user_id=${encodeURIComponent(session.user.id)}&token=${encodeURIComponent(token)}`,
+            { method: 'POST' }
+          )
+        } catch (err) {
+          console.error('Gagal simpan device token:', err)
+        }
+      }
+    }
+    daftarkanNotifikasi()
+
+    dengarkanNotifikasiForeground((payload) => {
+      alert(payload.notification?.title + '\n' + payload.notification?.body)
+    })
   }, [session])
 
   async function handleGoogleLogin() {
@@ -188,16 +210,23 @@ function App() {
       <div style={{ border: '1px solid #ccc', borderRadius: 10, padding: 15, minHeight: 300, marginBottom: 10 }}>
         {messages.map((m, i) => (
           <div key={i} style={{ textAlign: m.role === 'user' ? 'right' : 'left', margin: '8px 0' }}>
-            <span style={{
+            <div style={{
               display: 'inline-block',
               padding: '8px 12px',
               borderRadius: 12,
               background: m.role === 'user' ? '#3b82f6' : '#e5e7eb',
               color: m.role === 'user' ? 'white' : 'black',
               maxWidth: '80%',
+              wordBreak: 'break-word',
+              overflowWrap: 'break-word',
+              textAlign: 'left',
             }}>
-              {m.text}
-            </span>
+              {m.role === 'ai' ? (
+                <ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text}</ReactMarkdown>
+              ) : (
+                m.text
+              )}
+            </div>
           </div>
         ))}
         {chatLoading && <p>Mengetik...</p>}
