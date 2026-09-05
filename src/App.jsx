@@ -236,6 +236,10 @@ function App() {
                     td: ({node, ...props}) => (
                       <td style={{ border: '1px solid #999', padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top' }} {...props} />
                     ),
+                    h1: ({node, ...props}) => <h1 style={{ color: 'black' }} {...props} />,
+                    h2: ({node, ...props}) => <h2 style={{ color: 'black' }} {...props} />,
+                    h3: ({node, ...props}) => <h3 style={{ color: 'black' }} {...props} />,
+                    h4: ({node, ...props}) => <h4 style={{ color: 'black' }} {...props} />,
                   }}
                 >{m.text}</ReactMarkdown>
               ) : (
