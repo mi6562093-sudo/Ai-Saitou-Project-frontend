@@ -210,8 +210,14 @@ function App() {
     )
   }
 
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    document.documentElement.scrollLeft = 0
+    document.body.scrollLeft = 0
+  }, [messages])
+
   return (
-    <div style={{ maxWidth: 500, margin: '20px auto', padding: 20, fontFamily: 'sans-serif' }}>
+    <div style={{ maxWidth: 500, margin: '20px auto', padding: 20, fontFamily: 'sans-serif', overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Saitou-AI</h1>
         <div style={{ display: 'flex', gap: 8 }}>
