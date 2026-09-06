@@ -71,7 +71,7 @@ function App() {
         try {
           await fetch(
             `${BACKEND_URL}/device-token?user_id=${encodeURIComponent(session.user.id)}&token=${encodeURIComponent(token)}`,
-            { method: 'POST' }
+            { method: 'POST', headers: { 'Authorization': `Bearer ${session.access_token}` } }
           )
         } catch (err) {
           console.error('Gagal simpan device token:', err)
@@ -116,7 +116,10 @@ function App() {
         `${BACKEND_URL}/chat`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
           body: JSON.stringify({
             pesan: pesanUser,
             user_id: session.user.id,
@@ -136,7 +139,10 @@ function App() {
   async function ambilMemori() {
     setLoadingMemori(true)
     try {
-      const res = await fetch(`${BACKEND_URL}/memori/${encodeURIComponent(session.user.id)}`)
+      const res = await fetch(
+        `${BACKEND_URL}/memori/${encodeURIComponent(session.user.id)}`,
+        { headers: { 'Authorization': `Bearer ${session.access_token}` } }
+      )
       const data = await res.json()
       setMemoriList(Array.isArray(data) ? data : [])
     } catch (err) {
@@ -156,7 +162,7 @@ function App() {
     try {
       await fetch(
         `${BACKEND_URL}/memori/${encodeURIComponent(session.user.id)}/${encodeURIComponent(memoriId)}`,
-        { method: 'DELETE' }
+        { method: 'DELETE', headers: { 'Authorization': `Bearer ${session.access_token}` } }
       )
       setMemoriList((prev) => prev.filter((m) => m.id !== memoriId))
     } catch (err) {
