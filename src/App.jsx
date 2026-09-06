@@ -127,6 +127,10 @@ function App() {
           }),
         }
       )
+      if (res.status === 401 || res.status === 403) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'Sesi login kamu sudah tidak valid. Coba logout lalu login lagi ya.' }])
+        return
+      }
       const data = await res.json()
       setMessages((prev) => [...prev, { role: 'ai', text: data.jawaban || 'Tidak ada jawaban' }])
     } catch (err) {
