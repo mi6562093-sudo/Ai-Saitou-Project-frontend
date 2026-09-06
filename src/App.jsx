@@ -328,6 +328,21 @@ function App() {
         <p style={{ marginTop: 12, fontStyle: 'italic', fontSize: 13, color: '#999' }}>
           Prioritas kami: stabilitas, keamanan, privasi data, lalu kemampuan. Terima kasih sudah jadi bagian dari perjalanan ini. 🚀
         </p>
+        <a
+          href="mailto:mi6562093@gmail.com?subject=Feedback%20Saitou-AI"
+          style={{
+            display: 'inline-block',
+            marginTop: 12,
+            padding: '8px 16px',
+            borderRadius: 8,
+            border: '1px solid #555',
+            color: '#ddd',
+            textDecoration: 'none',
+            fontSize: 14,
+          }}
+        >
+          🐞 Kirim Feedback / Lapor Bug
+        </a>
       </div>
     </div>
   )
