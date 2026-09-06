@@ -63,6 +63,12 @@ function App() {
   }, [session])
 
   useEffect(() => {
+    window.scrollTo(0, 0)
+    document.documentElement.scrollLeft = 0
+    document.body.scrollLeft = 0
+  }, [messages])
+
+  useEffect(() => {
     if (!session) return
 
     async function daftarkanNotifikasi() {
@@ -209,12 +215,6 @@ function App() {
       </div>
     )
   }
-
-  useEffect(() => {
-    window.scrollTo(0, 0)
-    document.documentElement.scrollLeft = 0
-    document.body.scrollLeft = 0
-  }, [messages])
 
   return (
     <div style={{ maxWidth: 500, margin: '20px auto', padding: 20, fontFamily: 'sans-serif', overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
