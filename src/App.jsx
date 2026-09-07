@@ -320,17 +320,24 @@ function App() {
         <p style={{ marginBottom: 12 }}>
           Dukungan bersifat <strong>sukarela</strong>, sekecil apa pun sangat berarti — dan bukan cuma bantuan sesaat, tapi bagian dari pertumbuhan Saitou-AI ke depan. Supporter mendapat akses info perkembangan lebih awal dan kesempatan memberi masukan langsung.
         </p>
-        <button style={{
-          padding: '10px 20px',
-          borderRadius: 8,
-          border: 'none',
-          background: '#3b82f6',
-          color: 'white',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-        }}>
+        <a
+          href="https://trakteer.id/Saitou-AI_for_all"
+          target="_blank"
+          rel="noopener noreferrer"
+          style={{
+            display: 'inline-block',
+            padding: '10px 20px',
+            borderRadius: 8,
+            border: 'none',
+            background: '#3b82f6',
+            color: 'white',
+            fontWeight: 'bold',
+            textDecoration: 'none',
+            cursor: 'pointer',
+          }}
+        >
           💡📈 Dukung Saitou-AI →
-        </button>
+        </a>
         <p style={{ marginTop: 12, fontStyle: 'italic', fontSize: 13, color: '#999' }}>
           Prioritas kami: stabilitas, keamanan, privasi data, lalu kemampuan. Terima kasih sudah jadi bagian dari perjalanan ini. 🚀
         </p>
