@@ -1,3 +1,15 @@
+@keyframes firework-burst {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(1.3); opacity: 0; }
+}
+
+.firework-particle {
+  position: absolute;
+  font-size: 22px;
+  animation: firework-burst 1.1s ease-out forwards;
+  pointer-events: none;
+}
+
 html, body {
   overflow-x: hidden !important;
   max-width: 100vw;

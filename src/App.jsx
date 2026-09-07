@@ -22,6 +22,29 @@ function App() {
   const [memoriList, setMemoriList] = useState([])
   const [loadingMemori, setLoadingMemori] = useState(false)
 
+  const [showWelcome, setShowWelcome] = useState(
+    () => !localStorage.getItem('saitou_welcome_seen')
+  )
+
+  const kembangApi = Array.from({ length: 14 }, (_, i) => {
+    const sudut = (Math.PI * 2 * i) / 14
+    const jarak = 60 + Math.random() * 40
+    return {
+      id: i,
+      emoji: ['🎇', '✨', '🎉'][i % 3],
+      tx: Math.cos(sudut) * jarak,
+      ty: Math.sin(sudut) * jarak,
+      delay: Math.random() * 0.3,
+      left: 45 + Math.random() * 10,
+      top: 40 + Math.random() * 10,
+    }
+  })
+
+  function tutupWelcome() {
+    localStorage.setItem('saitou_welcome_seen', '1')
+    setShowWelcome(false)
+  }
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)
@@ -218,6 +241,51 @@ function App() {
 
   return (
     <div style={{ maxWidth: 500, margin: '20px auto', padding: 20, fontFamily: 'sans-serif', overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
+      {showWelcome && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+          background: 'rgba(0,0,0,0.7)', display: 'flex',
+          alignItems: 'center', justifyContent: 'center', zIndex: 1000,
+          padding: 20,
+        }}>
+          <div style={{
+            position: 'relative', background: '#1a1a1a', color: '#eee',
+            borderRadius: 16, padding: 24, maxWidth: 380, textAlign: 'center',
+            border: '1px solid #444', overflow: 'hidden',
+          }}>
+            {kembangApi.map((p) => (
+              <span
+                key={p.id}
+                className="firework-particle"
+                style={{
+                  left: `${p.left}%`,
+                  top: `${p.top}%`,
+                  animationDelay: `${p.delay}s`,
+                  '--tx': `${p.tx}px`,
+                  '--ty': `${p.ty}px`,
+                }}
+              >
+                {p.emoji}
+              </span>
+            ))}
+            <h2 style={{ marginTop: 0 }}>Halo, para Beta Tester yang luar biasa! 🌟</h2>
+            <p style={{ lineHeight: 1.6 }}>
+              Terima kasih sudah bergabung dan membantu kami memperbaiki platform ini. Tanpa kalian, inovasi kami tidak akan secepat ini. Selamat menjelajah, memberi masukan, dan bersenang-senang — semoga pengalaman kalian menyenangkan dan penuh inspirasi! 🎉
+            </p>
+            <p style={{ fontStyle: 'italic', color: '#aaa' }}>Sampai jumpa di setiap update berikutnya!</p>
+            <button
+              onClick={tutupWelcome}
+              style={{
+                marginTop: 12, padding: '8px 20px', borderRadius: 8,
+                border: 'none', background: '#3b82f6', color: 'white',
+                fontWeight: 'bold', cursor: 'pointer',
+              }}
+            >
+              Mulai Jelajahi
+            </button>
+          </div>
+        </div>
+      )}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <h1>Saitou-AI</h1>
         <div style={{ display: 'flex', gap: 8 }}>
