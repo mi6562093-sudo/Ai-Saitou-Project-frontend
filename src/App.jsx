@@ -234,15 +234,10 @@ function App() {
       }
       const data = await res.json()
       const jawabanBaru = data.jawaban || 'Tidak ada jawaban'
-      const adaTabel = mengandungTabelMarkdown(jawabanBaru)
       setMessages((prev) => {
         const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru }]
-        if (adaTabel) {
-          setTypingIndex(null)
-        } else {
-          setTypingIndex(pesanBaru.length - 1)
-          setTypedChars(0)
-        }
+        setTypingIndex(pesanBaru.length - 1)
+        setTypedChars(0)
         return pesanBaru
       })
     } catch (err) {
