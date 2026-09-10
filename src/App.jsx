@@ -509,7 +509,9 @@ function App() {
           )}
           {messages.map((m, i) => (
             <div key={i} style={{ textAlign: m.role === 'user' ? 'right' : 'left', margin: '10px 0' }}>
-              <div style={{
+              <div
+                className={m.role === 'ai' ? 'fade-in-message' : ''}
+                style={{
                 display: 'inline-block',
                 padding: '10px 14px',
                 borderRadius: 14,

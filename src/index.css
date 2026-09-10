@@ -148,3 +148,11 @@ code {
   animation: typing-blink 0.8s step-start infinite;
   margin-left: 1px;
 }
+
+@keyframes fade-in-message {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-in-message {
+  animation: fade-in-message 0.35s ease-out;
+}
