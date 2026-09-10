@@ -24,6 +24,12 @@ const C = {
   bubbleUserText: '#FAF7F1',
 }
 
+function mengandungTabelMarkdown(teks) {
+  return teks.split('\n').some(
+    (baris) => /^[\s|:-]+$/.test(baris) && baris.includes('|') && baris.includes('-')
+  )
+}
+
 function App() {
   const [viewportHeight, setViewportHeight] = useState(
     typeof window !== 'undefined' && window.visualViewport
@@ -58,7 +64,7 @@ function App() {
   const [typingIndex, setTypingIndex] = useState(null)
   const [typedChars, setTypedChars] = useState(0)
   const KARAKTER_PER_TICK = 1
-  const KECEPATAN_KETIK_MS = 30
+  const KECEPATAN_KETIK_MS = 20
 
   const messagesEndRef = useRef(null)
 
@@ -228,10 +234,15 @@ function App() {
       }
       const data = await res.json()
       const jawabanBaru = data.jawaban || 'Tidak ada jawaban'
+      const adaTabel = mengandungTabelMarkdown(jawabanBaru)
       setMessages((prev) => {
         const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru }]
-        setTypingIndex(pesanBaru.length - 1)
-        setTypedChars(0)
+        if (adaTabel) {
+          setTypingIndex(null)
+        } else {
+          setTypingIndex(pesanBaru.length - 1)
+          setTypedChars(0)
+        }
         return pesanBaru
       })
     } catch (err) {
