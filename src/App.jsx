@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { mintaIzinDanAmbilToken, dengarkanNotifikasiForeground } from './firebase'
 import ReactMarkdown from 'react-markdown'
@@ -54,6 +54,12 @@ function App() {
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
+
+  const messagesEndRef = useRef(null)
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+  }, [messages, chatLoading])
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showMemori, setShowMemori] = useState(false)
@@ -515,6 +521,7 @@ function App() {
             </div>
           ))}
           {chatLoading && <p style={{ color: C.textSecondary, fontSize: 14 }}>Mengetik...</p>}
+          <div ref={messagesEndRef} />
         </div>
 
         <div style={{
