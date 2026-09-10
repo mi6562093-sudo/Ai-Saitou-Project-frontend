@@ -24,12 +24,6 @@ const C = {
   bubbleUserText: '#FAF7F1',
 }
 
-function mengandungTabelMarkdown(teks) {
-  return teks.split('\n').some(
-    (baris) => /^[\s|:-]+$/.test(baris) && baris.includes('|') && baris.includes('-')
-  )
-}
-
 function App() {
   const [viewportHeight, setViewportHeight] = useState(
     typeof window !== 'undefined' && window.visualViewport
