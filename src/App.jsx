@@ -57,8 +57,8 @@ function App() {
 
   const [typingIndex, setTypingIndex] = useState(null)
   const [typedChars, setTypedChars] = useState(0)
-  const KARAKTER_PER_TICK = 3
-  const KECEPATAN_KETIK_MS = 15
+  const KARAKTER_PER_TICK = 1
+  const KECEPATAN_KETIK_MS = 30
 
   const messagesEndRef = useRef(null)
 
