@@ -55,11 +55,29 @@ function App() {
   const [input, setInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
 
+  const [typingIndex, setTypingIndex] = useState(null)
+  const [typedChars, setTypedChars] = useState(0)
+  const KARAKTER_PER_TICK = 3
+  const KECEPATAN_KETIK_MS = 15
+
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
-  }, [messages, chatLoading])
+  }, [messages, chatLoading, typedChars])
+
+  useEffect(() => {
+    if (typingIndex === null) return
+    const teksLengkap = messages[typingIndex]?.text || ''
+    if (typedChars >= teksLengkap.length) {
+      setTypingIndex(null)
+      return
+    }
+    const timer = setTimeout(() => {
+      setTypedChars((prev) => Math.min(prev + KARAKTER_PER_TICK, teksLengkap.length))
+    }, KECEPATAN_KETIK_MS)
+    return () => clearTimeout(timer)
+  }, [typingIndex, typedChars, messages])
 
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showMemori, setShowMemori] = useState(false)
@@ -209,7 +227,13 @@ function App() {
         return
       }
       const data = await res.json()
-      setMessages((prev) => [...prev, { role: 'ai', text: data.jawaban || 'Tidak ada jawaban' }])
+      const jawabanBaru = data.jawaban || 'Tidak ada jawaban'
+      setMessages((prev) => {
+        const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru }]
+        setTypingIndex(pesanBaru.length - 1)
+        setTypedChars(0)
+        return pesanBaru
+      })
     } catch (err) {
       setMessages((prev) => [...prev, { role: 'ai', text: 'Error: gagal menghubungi backend' }])
     } finally {
@@ -488,6 +512,9 @@ function App() {
                 lineHeight: 1.5,
               }}>
                 {m.role === 'ai' ? (
+                  i === typingIndex ? (
+                    <span style={{ whiteSpace: 'pre-wrap' }}>{m.text.slice(0, typedChars)}<span className="typing-cursor">▌</span></span>
+                  ) : (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
                     components={{
@@ -514,6 +541,7 @@ function App() {
                       ),
                     }}
                   >{m.text}</ReactMarkdown>
+                  )
                 ) : (
                   m.text
                 )}

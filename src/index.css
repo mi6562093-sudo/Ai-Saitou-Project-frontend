@@ -138,3 +138,13 @@ code {
   padding: 4px 8px;
   background: var(--code-bg);
 }
+
+@keyframes typing-blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0; }
+}
+.typing-cursor {
+  display: inline-block;
+  animation: typing-blink 0.8s step-start infinite;
+  margin-left: 1px;
+}
