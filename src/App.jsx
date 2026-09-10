@@ -25,6 +25,29 @@ const C = {
 }
 
 function App() {
+  const [viewportHeight, setViewportHeight] = useState(
+    typeof window !== 'undefined' && window.visualViewport
+      ? window.visualViewport.height
+      : (typeof window !== 'undefined' ? window.innerHeight : 800)
+  )
+
+  useEffect(() => {
+    function updateViewportHeight() {
+      if (window.visualViewport) {
+        setViewportHeight(window.visualViewport.height)
+      } else {
+        setViewportHeight(window.innerHeight)
+      }
+    }
+    updateViewportHeight()
+    window.visualViewport?.addEventListener('resize', updateViewportHeight)
+    window.addEventListener('resize', updateViewportHeight)
+    return () => {
+      window.visualViewport?.removeEventListener('resize', updateViewportHeight)
+      window.removeEventListener('resize', updateViewportHeight)
+    }
+  }, [])
+
   const [session, setSession] = useState(null)
   const [checkingSession, setCheckingSession] = useState(true)
 
@@ -262,7 +285,7 @@ function App() {
   }
 
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: 'sans-serif', background: C.bg }}>
+    <div style={{ display: 'flex', height: `${viewportHeight}px`, overflow: 'hidden', fontFamily: 'sans-serif', background: C.bg }}>
 
       {showWelcome && (
         <div style={{
