@@ -10,6 +10,20 @@ const supabase = createClient(
   "sb_publishable_XEnH5zPGF0xG48FuKnC3Wg_jWXKKzgA"
 )
 
+const C = {
+  bg: '#FAF7F1',
+  bgElevated: '#F0EBE1',
+  bgSidebar: '#F3EEE3',
+  text: '#151210',
+  textSecondary: '#8A8175',
+  accent: '#C9A96A',
+  accentDark: '#AD8A4E',
+  accentRare: '#6E2430',
+  border: '#E4DCC9',
+  bubbleUserBg: '#151210',
+  bubbleUserText: '#FAF7F1',
+}
+
 function App() {
   const [session, setSession] = useState(null)
   const [checkingSession, setCheckingSession] = useState(true)
@@ -18,6 +32,7 @@ function App() {
   const [input, setInput] = useState('')
   const [chatLoading, setChatLoading] = useState(false)
 
+  const [sidebarOpen, setSidebarOpen] = useState(false)
   const [showMemori, setShowMemori] = useState(false)
   const [memoriList, setMemoriList] = useState([])
   const [loadingMemori, setLoadingMemori] = useState(false)
@@ -192,6 +207,7 @@ function App() {
   function toggleMemori() {
     const akanTampil = !showMemori
     setShowMemori(akanTampil)
+    setSidebarOpen(false)
     if (akanTampil) ambilMemori()
   }
 
@@ -208,50 +224,57 @@ function App() {
   }
 
   if (checkingSession) {
-    return <div style={{ textAlign: 'center', marginTop: 50 }}>Memuat...</div>
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: C.bg, color: C.textSecondary, fontFamily: 'sans-serif' }}>
+        Memuat...
+      </div>
+    )
   }
 
   if (!session) {
     return (
-      <div style={{ maxWidth: 400, margin: '60px auto', padding: 20, fontFamily: 'sans-serif', textAlign: 'center' }}>
-        <h1>Saitou-AI</h1>
-        <p style={{ color: '#888', marginBottom: 24 }}>Masuk untuk mulai mengobrol</p>
-        <button
-          onClick={handleGoogleLogin}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: 10,
-            width: '100%',
-            padding: '12px 20px',
-            fontSize: 16,
-            borderRadius: 8,
-            border: '1px solid #ccc',
-            background: 'white',
-            color: '#333',
-            cursor: 'pointer',
-          }}
-        >
-          Login dengan Google
-        </button>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: C.bg, fontFamily: 'sans-serif', padding: 20 }}>
+        <div style={{ maxWidth: 340, width: '100%', textAlign: 'center' }}>
+          <h1 style={{ fontFamily: 'Georgia, serif', color: C.text, marginBottom: 4 }}>Saitou-AI</h1>
+          <p style={{ color: C.textSecondary, marginBottom: 28 }}>Masuk untuk mulai mengobrol</p>
+          <button
+            onClick={handleGoogleLogin}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: 10,
+              width: '100%',
+              padding: '12px 20px',
+              fontSize: 15,
+              borderRadius: 10,
+              border: `1px solid ${C.border}`,
+              background: 'white',
+              color: C.text,
+              cursor: 'pointer',
+            }}
+          >
+            Login dengan Google
+          </button>
+        </div>
       </div>
     )
   }
 
   return (
-    <div style={{ maxWidth: 500, margin: '20px auto', padding: 20, fontFamily: 'sans-serif', overflowX: 'hidden', width: '100%', boxSizing: 'border-box' }}>
+    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', fontFamily: 'sans-serif', background: C.bg }}>
+
       {showWelcome && (
         <div style={{
           position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
-          background: 'rgba(0,0,0,0.7)', display: 'flex',
+          background: 'rgba(21,18,16,0.75)', display: 'flex',
           alignItems: 'center', justifyContent: 'center', zIndex: 1000,
           padding: 20,
         }}>
           <div style={{
-            position: 'relative', background: '#1a1a1a', color: '#eee',
+            position: 'relative', background: C.bgElevated, color: C.text,
             borderRadius: 16, padding: 24, maxWidth: 380, textAlign: 'center',
-            border: '1px solid #444', overflow: 'hidden',
+            border: `1px solid ${C.border}`, overflow: 'hidden',
           }}>
             {kembangApi.map((p) => (
               <span
@@ -268,16 +291,16 @@ function App() {
                 {p.emoji}
               </span>
             ))}
-            <h2 style={{ marginTop: 0 }}>Halo, para Beta Tester yang luar biasa! 🌟</h2>
+            <h2 style={{ marginTop: 0, fontFamily: 'Georgia, serif' }}>Halo, para Beta Tester yang luar biasa! 🌟</h2>
             <p style={{ lineHeight: 1.6 }}>
               Terima kasih sudah bergabung dan membantu kami memperbaiki platform ini. Tanpa kalian, inovasi kami tidak akan secepat ini. Selamat menjelajah, memberi masukan, dan bersenang-senang — semoga pengalaman kalian menyenangkan dan penuh inspirasi! 🎉
             </p>
-            <p style={{ fontStyle: 'italic', color: '#aaa' }}>Sampai jumpa di setiap update berikutnya!</p>
+            <p style={{ fontStyle: 'italic', color: C.textSecondary }}>Sampai jumpa di setiap update berikutnya!</p>
             <button
               onClick={tutupWelcome}
               style={{
                 marginTop: 12, padding: '8px 20px', borderRadius: 8,
-                border: 'none', background: '#3b82f6', color: 'white',
+                border: 'none', background: C.accent, color: C.text,
                 fontWeight: 'bold', cursor: 'pointer',
               }}
             >
@@ -286,144 +309,219 @@ function App() {
           </div>
         </div>
       )}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <h1>Saitou-AI</h1>
-        <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={toggleMemori}>{showMemori ? 'Tutup Memori' : 'Kelola Memori'}</button>
-          <button onClick={handleLogout}>Logout</button>
-        </div>
-      </div>
-      <p style={{ color: '#888', marginTop: -10 }}>{session.user.email}</p>
 
       {showMemori && (
-        <div style={{ border: '1px solid #ccc', borderRadius: 10, padding: 15, marginBottom: 10 }}>
-          <h3 style={{ marginTop: 0 }}>Memori Tersimpan</h3>
-          {loadingMemori && <p>Memuat memori...</p>}
-          {!loadingMemori && memoriList.length === 0 && <p style={{ color: '#888' }}>Belum ada memori tersimpan.</p>}
-          {!loadingMemori && memoriList.map((m) => (
-            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #eee', padding: '8px 0' }}>
-              <span style={{ flex: 1, marginRight: 10 }}>{m.isi}</span>
-              <button onClick={() => hapusMemoriItem(m.id)} style={{ color: 'red', cursor: 'pointer' }}>Hapus</button>
+        <div
+          onClick={() => setShowMemori(false)}
+          style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(21,18,16,0.5)', display: 'flex',
+            alignItems: 'center', justifyContent: 'center', zIndex: 900,
+            padding: 20,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: 'white', color: C.text, borderRadius: 16,
+              padding: 20, maxWidth: 400, width: '100%', maxHeight: '70vh',
+              overflowY: 'auto', border: `1px solid ${C.border}`,
+            }}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
+              <h3 style={{ margin: 0, fontFamily: 'Georgia, serif' }}>Memori Tersimpan</h3>
+              <button onClick={() => setShowMemori(false)} style={{ border: 'none', background: 'none', fontSize: 18, cursor: 'pointer', color: C.textSecondary }}>✕</button>
             </div>
-          ))}
+            {loadingMemori && <p style={{ color: C.textSecondary }}>Memuat memori...</p>}
+            {!loadingMemori && memoriList.length === 0 && <p style={{ color: C.textSecondary }}>Belum ada memori tersimpan.</p>}
+            {!loadingMemori && memoriList.map((m) => (
+              <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: `1px solid ${C.border}`, padding: '10px 0' }}>
+                <span style={{ flex: 1, marginRight: 10, fontSize: 14 }}>{m.isi}</span>
+                <button onClick={() => hapusMemoriItem(m.id)} style={{ color: C.accentRare, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13 }}>Hapus</button>
+              </div>
+            ))}
+          </div>
         </div>
       )}
 
-      <div style={{ border: '1px solid #ccc', borderRadius: 10, padding: 15, minHeight: 300, marginBottom: 10 }}>
-        {messages.map((m, i) => (
-          <div key={i} style={{ textAlign: m.role === 'user' ? 'right' : 'left', margin: '8px 0' }}>
-            <div style={{
-              display: 'inline-block',
-              padding: '8px 12px',
-              borderRadius: 12,
-              background: m.role === 'user' ? '#3b82f6' : '#e5e7eb',
-              color: m.role === 'user' ? 'white' : 'black',
-              maxWidth: '80%',
-              wordBreak: 'break-word',
-              overflowWrap: 'break-word',
-              textAlign: 'left',
-            }}>
-              {m.role === 'ai' ? (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    table: ({node, ...props}) => (
-                      <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
-                        <table style={{ borderCollapse: 'collapse', width: 'max-content' }} {...props} />
-                      </div>
-                    ),
-                    th: ({node, ...props}) => (
-                      <th style={{ border: '1px solid #999', padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top' }} {...props} />
-                    ),
-                    td: ({node, ...props}) => (
-                      <td style={{ border: '1px solid #999', padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top' }} {...props} />
-                    ),
-                    h1: ({node, ...props}) => <h1 style={{ color: 'black' }} {...props} />,
-                    h2: ({node, ...props}) => <h2 style={{ color: 'black' }} {...props} />,
-                    h3: ({node, ...props}) => <h3 style={{ color: 'black' }} {...props} />,
-                    h4: ({node, ...props}) => <h4 style={{ color: 'black' }} {...props} />,
-                    pre: ({node, ...props}) => (
-                      <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', overflowWrap: 'break-word', maxWidth: '100%', background: '#000', color: '#0f0', padding: 8, borderRadius: 6 }} {...props} />
-                    ),
-                    code: ({node, ...props}) => (
-                      <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', overflowWrap: 'break-word' }} {...props} />
-                    ),
-                  }}
-                >{m.text}</ReactMarkdown>
-              ) : (
-                m.text
-              )}
-            </div>
-          </div>
-        ))}
-        {chatLoading && <p>Mengetik...</p>}
-      </div>
-      <div style={{ display: 'flex', gap: 8 }}>
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-          placeholder="Tulis pesan..."
-          style={{ flex: 1, padding: 10, fontSize: 16 }}
+      {sidebarOpen && (
+        <div
+          onClick={() => setSidebarOpen(false)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(21,18,16,0.4)', zIndex: 40 }}
         />
-        <button onClick={sendMessage} disabled={chatLoading}>Kirim</button>
-      </div>
+      )}
 
       <div style={{
-        marginTop: 24,
-        padding: 16,
-        borderRadius: 10,
-        border: '1px solid #333',
-        background: '#1a1a1a',
-        color: '#ddd',
-        fontSize: 14,
-        lineHeight: 1.6,
+        position: 'fixed', top: 0, left: 0, bottom: 0, width: 260,
+        background: C.bgSidebar, borderRight: `1px solid ${C.border}`,
+        transform: sidebarOpen ? 'translateX(0)' : 'translateX(-100%)',
+        transition: 'transform 0.25s ease', zIndex: 50,
+        display: 'flex', flexDirection: 'column', padding: 16,
+        boxSizing: 'border-box',
       }}>
-        <p style={{ fontWeight: 'bold', fontSize: 16, marginBottom: 8 }}>
-          💡📈 Dukung Pengembangan <span style={{ whiteSpace: 'nowrap' }}>Saitou-AI</span>
-        </p>
-        <p style={{ marginBottom: 8 }}>
-          Saitou-AI adalah proyek yang terus dikembangkan secara bertahap. Dukunganmu membantu membiayai server, API, keamanan, dan pengembangan fitur baru — supaya Saitou-AI bisa terus jadi lebih stabil, cerdas, dan mampu melakukan lebih banyak hal ke depannya.
-        </p>
-        <p style={{ marginBottom: 12 }}>
-          Dukungan bersifat <strong>sukarela</strong>, sekecil apa pun sangat berarti — dan bukan cuma bantuan sesaat, tapi bagian dari pertumbuhan Saitou-AI ke depan. Supporter mendapat akses info perkembangan lebih awal dan kesempatan memberi masukan langsung.
-        </p>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+          <span style={{ fontFamily: 'Georgia, serif', fontSize: 20, fontWeight: 'bold', color: C.text }}>Saitou-AI</span>
+          <button onClick={() => setSidebarOpen(false)} style={{ border: 'none', background: 'none', fontSize: 18, cursor: 'pointer', color: C.textSecondary }}>✕</button>
+        </div>
+
+        <button
+          onClick={toggleMemori}
+          style={{
+            display: 'flex', alignItems: 'center', gap: 10, textAlign: 'left',
+            padding: '10px 12px', borderRadius: 8, border: 'none',
+            background: 'transparent', color: C.text, cursor: 'pointer',
+            fontSize: 14, marginBottom: 4,
+          }}
+        >
+          🧠 Kelola Memori
+        </button>
+
         <a
           href="https://trakteer.id/Saitou-AI_for_all"
           target="_blank"
           rel="noopener noreferrer"
+          onClick={() => setSidebarOpen(false)}
           style={{
-            display: 'inline-block',
-            padding: '10px 20px',
-            borderRadius: 8,
-            border: 'none',
-            background: '#3b82f6',
-            color: 'white',
-            fontWeight: 'bold',
-            textDecoration: 'none',
-            cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 12px', borderRadius: 8,
+            color: C.text, textDecoration: 'none', fontSize: 14, marginBottom: 4,
           }}
         >
-          💡📈 Dukung Saitou-AI →
+          💡 Dukung Saitou-AI
         </a>
-        <p style={{ marginTop: 12, fontStyle: 'italic', fontSize: 13, color: '#999' }}>
-          Prioritas kami: stabilitas, keamanan, privasi data, lalu kemampuan. Terima kasih sudah jadi bagian dari perjalanan ini. 🚀
-        </p>
+
         <a
           href="mailto:mi6562093@gmail.com?subject=Feedback%20Saitou-AI"
+          onClick={() => setSidebarOpen(false)}
           style={{
-            display: 'inline-block',
-            marginTop: 12,
-            padding: '8px 16px',
-            borderRadius: 8,
-            border: '1px solid #555',
-            color: '#ddd',
-            textDecoration: 'none',
-            fontSize: 14,
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: '10px 12px', borderRadius: 8,
+            color: C.text, textDecoration: 'none', fontSize: 14,
           }}
         >
-          🐞 Kirim Feedback / Lapor Bug
+          🐞 Kirim Feedback
         </a>
+
+        <div style={{ flex: 1 }} />
+
+        <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+          <p style={{ color: C.textSecondary, fontSize: 12, marginBottom: 10, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {session.user.email}
+          </p>
+          <button
+            onClick={handleLogout}
+            style={{
+              width: '100%', padding: '9px 12px', borderRadius: 8,
+              border: `1px solid ${C.border}`, background: 'white',
+              color: C.text, cursor: 'pointer', fontSize: 14,
+            }}
+          >
+            Logout
+          </button>
+        </div>
+      </div>
+
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '14px 16px', borderBottom: `1px solid ${C.border}`,
+          background: C.bg, flexShrink: 0,
+        }}>
+          <button
+            onClick={() => setSidebarOpen(true)}
+            style={{ border: 'none', background: 'none', fontSize: 20, cursor: 'pointer', color: C.text, padding: 4 }}
+          >
+            ☰
+          </button>
+          <span style={{ fontFamily: 'Georgia, serif', fontWeight: 'bold', fontSize: 17, color: C.text }}>Saitou-AI</span>
+        </div>
+
+        <div style={{ flex: 1, overflowY: 'auto', padding: '16px', boxSizing: 'border-box' }}>
+          {messages.length === 0 && (
+            <div style={{ textAlign: 'center', color: C.textSecondary, marginTop: 60, fontSize: 14 }}>
+              Mulai percakapan dengan Saitou-AI
+            </div>
+          )}
+          {messages.map((m, i) => (
+            <div key={i} style={{ textAlign: m.role === 'user' ? 'right' : 'left', margin: '10px 0' }}>
+              <div style={{
+                display: 'inline-block',
+                padding: '10px 14px',
+                borderRadius: 14,
+                background: m.role === 'user' ? C.bubbleUserBg : C.bgElevated,
+                color: m.role === 'user' ? C.bubbleUserText : C.text,
+                maxWidth: '82%',
+                wordBreak: 'break-word',
+                overflowWrap: 'break-word',
+                textAlign: 'left',
+                fontSize: 15,
+                lineHeight: 1.5,
+              }}>
+                {m.role === 'ai' ? (
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      table: ({node, ...props}) => (
+                        <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
+                          <table style={{ borderCollapse: 'collapse', width: 'max-content' }} {...props} />
+                        </div>
+                      ),
+                      th: ({node, ...props}) => (
+                        <th style={{ border: `1px solid ${C.border}`, padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top' }} {...props} />
+                      ),
+                      td: ({node, ...props}) => (
+                        <td style={{ border: `1px solid ${C.border}`, padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top' }} {...props} />
+                      ),
+                      h1: ({node, ...props}) => <h1 style={{ color: C.text }} {...props} />,
+                      h2: ({node, ...props}) => <h2 style={{ color: C.text }} {...props} />,
+                      h3: ({node, ...props}) => <h3 style={{ color: C.text }} {...props} />,
+                      h4: ({node, ...props}) => <h4 style={{ color: C.text }} {...props} />,
+                      pre: ({node, ...props}) => (
+                        <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', overflowWrap: 'break-word', maxWidth: '100%', background: C.text, color: C.bg, padding: 8, borderRadius: 6 }} {...props} />
+                      ),
+                      code: ({node, ...props}) => (
+                        <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', overflowWrap: 'break-word' }} {...props} />
+                      ),
+                    }}
+                  >{m.text}</ReactMarkdown>
+                ) : (
+                  m.text
+                )}
+              </div>
+            </div>
+          ))}
+          {chatLoading && <p style={{ color: C.textSecondary, fontSize: 14 }}>Mengetik...</p>}
+        </div>
+
+        <div style={{
+          display: 'flex', gap: 8, padding: '12px 16px',
+          borderTop: `1px solid ${C.border}`, background: C.bg,
+          flexShrink: 0, boxSizing: 'border-box',
+        }}>
+          <input
+            value={input}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
+            placeholder="Tulis pesan..."
+            style={{
+              flex: 1, padding: '10px 14px', fontSize: 15,
+              borderRadius: 10, border: `1px solid ${C.border}`,
+              outline: 'none', fontFamily: 'sans-serif',
+            }}
+          />
+          <button
+            onClick={sendMessage}
+            disabled={chatLoading}
+            style={{
+              padding: '10px 18px', borderRadius: 10, border: 'none',
+              background: C.text, color: C.bg, cursor: 'pointer',
+              fontWeight: 'bold', fontSize: 14,
+            }}
+          >
+            Kirim
+          </button>
+        </div>
       </div>
     </div>
   )
