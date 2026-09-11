@@ -25,6 +25,12 @@ const C = {
 }
 
 function App() {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [modeDaftar, setModeDaftar] = useState(false)
+  const [authError, setAuthError] = useState('')
+  const [authLoading, setAuthLoading] = useState(false)
+
   const [viewportHeight, setViewportHeight] = useState(
     typeof window !== 'undefined' && window.visualViewport
       ? window.visualViewport.height
@@ -176,6 +182,29 @@ function App() {
     })
   }, [session])
 
+  async function handleEmailAuth() {
+    setAuthError('')
+    if (!email || !password) {
+      setAuthError('Email dan password wajib diisi.')
+      return
+    }
+    setAuthLoading(true)
+    if (modeDaftar) {
+      const { error } = await supabase.auth.signUp({ email, password })
+      if (error) {
+        setAuthError(error.message)
+      } else {
+        setAuthError('Berhasil daftar! Cek email kamu untuk verifikasi sebelum masuk.')
+      }
+    } else {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) {
+        setAuthError(error.message)
+      }
+    }
+    setAuthLoading(false)
+  }
+
   async function handleGoogleLogin() {
     await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -289,7 +318,68 @@ function App() {
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100vh', background: C.bg, fontFamily: 'sans-serif', padding: 20 }}>
         <div style={{ maxWidth: 340, width: '100%', textAlign: 'center' }}>
           <h1 style={{ fontFamily: 'Georgia, serif', color: C.text, marginBottom: 4 }}>Saitou-AI</h1>
-          <p style={{ color: C.textSecondary, marginBottom: 28 }}>Masuk untuk mulai mengobrol</p>
+          <p style={{ color: C.textSecondary, marginBottom: 28 }}>
+            {modeDaftar ? 'Buat akun baru' : 'Masuk untuk mulai mengobrol'}
+          </p>
+
+          <input
+            type="email"
+            placeholder="Email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            style={{
+              width: '100%', padding: '12px 14px', fontSize: 15, marginBottom: 10,
+              borderRadius: 10, border: `1px solid ${C.border}`, boxSizing: 'border-box',
+              fontFamily: 'sans-serif', outline: 'none',
+            }}
+          />
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleEmailAuth()}
+            style={{
+              width: '100%', padding: '12px 14px', fontSize: 15, marginBottom: 10,
+              borderRadius: 10, border: `1px solid ${C.border}`, boxSizing: 'border-box',
+              fontFamily: 'sans-serif', outline: 'none',
+            }}
+          />
+
+          {authError && (
+            <p style={{ color: C.accentRare, fontSize: 13, marginBottom: 10, textAlign: 'left' }}>
+              {authError}
+            </p>
+          )}
+
+          <button
+            onClick={handleEmailAuth}
+            disabled={authLoading}
+            style={{
+              width: '100%', padding: '12px 20px', fontSize: 15, borderRadius: 10,
+              border: 'none', background: C.text, color: C.bg, cursor: 'pointer',
+              fontWeight: 'bold', marginBottom: 12,
+            }}
+          >
+            {authLoading ? 'Memproses...' : modeDaftar ? 'Daftar' : 'Masuk'}
+          </button>
+
+          <p style={{ fontSize: 13, color: C.textSecondary, marginBottom: 20 }}>
+            {modeDaftar ? 'Sudah punya akun? ' : 'Belum punya akun? '}
+            <span
+              onClick={() => { setModeDaftar(!modeDaftar); setAuthError('') }}
+              style={{ color: C.accentDark, cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              {modeDaftar ? 'Masuk di sini' : 'Daftar di sini'}
+            </span>
+          </p>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
+            <div style={{ flex: 1, height: 1, background: C.border }} />
+            <span style={{ fontSize: 12, color: C.textSecondary }}>atau</span>
+            <div style={{ flex: 1, height: 1, background: C.border }} />
+          </div>
+
           <button
             onClick={handleGoogleLogin}
             style={{
