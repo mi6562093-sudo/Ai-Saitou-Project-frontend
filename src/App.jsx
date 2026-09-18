@@ -65,6 +65,9 @@ function App() {
 
   const [typingIndex, setTypingIndex] = useState(null)
   const [typedChars, setTypedChars] = useState(0)
+  const [copiedIndex, setCopiedIndex] = useState(null)
+  const [feedback, setFeedback] = useState({})
+  const [regenerating, setRegenerating] = useState(false)
   const KARAKTER_PER_TICK = 1
   const KECEPATAN_KETIK_MS = 20
 
@@ -344,6 +347,84 @@ function App() {
       setSelectedFile(file)
     }
     e.target.value = ''
+  }
+
+  function copyToClipboard(text, index) {
+    navigator.clipboard.writeText(text).then(() => {
+      setCopiedIndex(index)
+      setTimeout(() => setCopiedIndex(null), 1500)
+    }).catch(() => {})
+  }
+
+  function toggleFeedback(index, jenis) {
+    setFeedback((prev) => ({
+      ...prev,
+      [index]: prev[index] === jenis ? null : jenis,
+    }))
+  }
+
+  function shareMessage(text) {
+    if (navigator.share) {
+      navigator.share({ text }).catch(() => {})
+    } else {
+      copyToClipboard(text, null)
+    }
+  }
+
+  async function regenerateResponse() {
+    if (messages.length === 0) return
+    const pesanTerakhir = messages[messages.length - 1]
+    if (pesanTerakhir.role !== 'ai') return
+    const pesanUserSebelumnya = messages[messages.length - 2]
+    if (!pesanUserSebelumnya || pesanUserSebelumnya.role !== 'user') return
+
+    const pesanUser = pesanUserSebelumnya.text
+    const messagesTanpaJawabanLama = messages.slice(0, -1)
+    setMessages(messagesTanpaJawabanLama)
+
+    const riwayat = messagesTanpaJawabanLama.slice(0, -1).slice(-6).map((m) => ({
+      role: m.role === 'user' ? 'user' : 'assistant',
+      content: m.text,
+    }))
+
+    setRegenerating(true)
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/chat`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            pesan: pesanUser,
+            user_id: session.user.id,
+            riwayat: riwayat,
+          }),
+        }
+      )
+      if (res.status === 401 || res.status === 403) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'Sesi login kamu sudah tidak valid. Coba logout lalu login lagi ya.' }])
+        return
+      }
+      if (res.status === 429) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'Kamu mengirim pesan terlalu cepat. Tunggu sebentar ya sebelum kirim lagi.' }])
+        return
+      }
+      const data = await res.json()
+      const jawabanBaru = data.jawaban || 'Tidak ada jawaban'
+      setMessages((prev) => {
+        const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru }]
+        setTypingIndex(pesanBaru.length - 1)
+        setTypedChars(0)
+        return pesanBaru
+      })
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: 'ai', text: 'Error: gagal menghubungi backend' }])
+    } finally {
+      setRegenerating(false)
+    }
   }
 
   async function ambilMemori() {
@@ -714,6 +795,48 @@ function App() {
                   m.text
                 )}
               </div>
+              {m.role === 'ai' && i !== typingIndex && (
+                <div style={{ display: 'flex', gap: 10, marginTop: 4, paddingLeft: 4 }}>
+                  <button
+                    onClick={() => copyToClipboard(m.text, i)}
+                    title="Salin teks"
+                    style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: C.textSecondary, padding: 2 }}
+                  >
+                    {copiedIndex === i ? '✓ Disalin' : '⧉ Salin'}
+                  </button>
+                  <button
+                    onClick={() => toggleFeedback(i, 'like')}
+                    title="Suka"
+                    style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 14, opacity: feedback[i] === 'like' ? 1 : 0.5 }}
+                  >
+                    👍
+                  </button>
+                  <button
+                    onClick={() => toggleFeedback(i, 'dislike')}
+                    title="Tidak suka"
+                    style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 14, opacity: feedback[i] === 'dislike' ? 1 : 0.5 }}
+                  >
+                    👎
+                  </button>
+                  {i === messages.length - 1 && (
+                    <button
+                      onClick={regenerateResponse}
+                      disabled={regenerating}
+                      title="Ulang respons"
+                      style={{ border: 'none', background: 'none', cursor: regenerating ? 'default' : 'pointer', fontSize: 13, color: C.textSecondary, padding: 2, opacity: regenerating ? 0.5 : 1 }}
+                    >
+                      ↻ Ulang
+                    </button>
+                  )}
+                  <button
+                    onClick={() => shareMessage(m.text)}
+                    title="Bagikan"
+                    style={{ border: 'none', background: 'none', cursor: 'pointer', fontSize: 13, color: C.textSecondary, padding: 2 }}
+                  >
+                    ↗ Bagikan
+                  </button>
+                </div>
+              )}
             </div>
           ))}
           {chatLoading && <p style={{ color: C.textSecondary, fontSize: 14 }}>Mengetik...</p>}
