@@ -307,7 +307,7 @@ function App() {
       if (data.status === 'completed') {
         jawabanBaru = data.ringkasan || 'Selesai, tapi tidak ada ringkasan hasil.'
       } else if (data.status === 'failed') {
-        jawabanBaru = `Gagal memproses file: ${data.alasan || 'alasan tidak diketahui'}`
+        jawabanBaru = data.ringkasan || (data.alasan ? `Gagal memproses file: ${data.alasan}` : 'Gagal memproses file (alasan tidak diketahui).')
       } else {
         jawabanBaru = data.pesan || 'Terjadi kesalahan saat memproses file.'
       }
