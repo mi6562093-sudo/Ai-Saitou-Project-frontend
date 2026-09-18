@@ -59,6 +59,8 @@ function App() {
 
   const [messages, setMessages] = useState([])
   const [input, setInput] = useState('')
+  const [selectedFile, setSelectedFile] = useState(null)
+  const fileInputRef = useRef(null)
   const [chatLoading, setChatLoading] = useState(false)
 
   const [typingIndex, setTypingIndex] = useState(null)
@@ -268,6 +270,79 @@ function App() {
     } finally {
       setChatLoading(false)
     }
+  }
+
+  async function sendMessageDenganFile() {
+    const fileTerpilih = selectedFile
+    const pesanUser = input.trim() || `Tolong proses file terlampir: ${fileTerpilih.name}`
+    setInput('')
+    setSelectedFile(null)
+
+    setMessages((prev) => [...prev, { role: 'user', text: `\ud83d\udcce ${fileTerpilih.name}${input.trim() ? '\n' + input.trim() : ''}` }])
+    setChatLoading(true)
+    try {
+      const formData = new FormData()
+      formData.append('user_id', session.user.id)
+      formData.append('objective', pesanUser)
+      formData.append('file', fileTerpilih)
+
+      const res = await fetch(
+        `${BACKEND_URL}/agent/upload`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session.access_token}` },
+          body: formData,
+        }
+      )
+      if (res.status === 401 || res.status === 403) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'Sesi login kamu sudah tidak valid. Coba logout lalu login lagi ya.' }])
+        return
+      }
+      if (res.status === 429) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'Kamu mengirim pesan terlalu cepat. Tunggu sebentar ya sebelum kirim lagi.' }])
+        return
+      }
+      const data = await res.json()
+      let jawabanBaru
+      if (data.status === 'completed') {
+        jawabanBaru = data.ringkasan || 'Selesai, tapi tidak ada ringkasan hasil.'
+      } else if (data.status === 'failed') {
+        jawabanBaru = `Gagal memproses file: ${data.alasan || 'alasan tidak diketahui'}`
+      } else {
+        jawabanBaru = data.pesan || 'Terjadi kesalahan saat memproses file.'
+      }
+      setMessages((prev) => {
+        const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru }]
+        setTypingIndex(pesanBaru.length - 1)
+        setTypedChars(0)
+        return pesanBaru
+      })
+    } catch (err) {
+      setMessages((prev) => [...prev, { role: 'ai', text: 'Error: gagal mengunggah file ke backend' }])
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
+  function handleKirim() {
+    if (selectedFile) {
+      sendMessageDenganFile()
+    } else {
+      sendMessage()
+    }
+  }
+
+  function handlePilihFile(e) {
+    const file = e.target.files && e.target.files[0]
+    if (file) {
+      if (file.size > 10 * 1024 * 1024) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'File terlalu besar (maks 10MB).' }])
+        e.target.value = ''
+        return
+      }
+      setSelectedFile(file)
+    }
+    e.target.value = ''
   }
 
   async function ambilMemori() {
@@ -644,16 +719,51 @@ function App() {
           <div ref={messagesEndRef} />
         </div>
 
+        {selectedFile && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 8,
+            padding: '8px 16px 0 16px', background: C.bg, flexShrink: 0,
+          }}>
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: 6,
+              background: C.bgElevated, borderRadius: 8, padding: '4px 10px',
+              fontSize: 13, color: C.text,
+            }}>
+              \ud83d\udcce {selectedFile.name}
+              <button
+                onClick={() => setSelectedFile(null)}
+                style={{ border: 'none', background: 'none', cursor: 'pointer', color: C.textSecondary, fontSize: 14 }}
+              >\u2715</button>
+            </span>
+          </div>
+        )}
         <div style={{
           display: 'flex', gap: 8, padding: '12px 16px',
           borderTop: `1px solid ${C.border}`, background: C.bg,
           flexShrink: 0, boxSizing: 'border-box',
         }}>
           <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handlePilihFile}
+            style={{ display: 'none' }}
+          />
+          <button
+            onClick={() => fileInputRef.current && fileInputRef.current.click()}
+            disabled={chatLoading}
+            title="Lampirkan file"
+            style={{
+              padding: '10px 12px', borderRadius: 10, border: `1px solid ${C.border}`,
+              background: C.bgElevated, color: C.text, cursor: 'pointer', fontSize: 16,
+            }}
+          >
+            \ud83d\udcce
+          </button>
+          <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === 'Enter' && sendMessage()}
-            placeholder="Tulis pesan..."
+            onKeyDown={(e) => e.key === 'Enter' && handleKirim()}
+            placeholder={selectedFile ? "Tulis instruksi soal file ini (opsional)..." : "Tulis pesan..."}
             style={{
               flex: 1, padding: '10px 14px', fontSize: 15,
               borderRadius: 10, border: `1px solid ${C.border}`,
@@ -661,7 +771,7 @@ function App() {
             }}
           />
           <button
-            onClick={sendMessage}
+            onClick={handleKirim}
             disabled={chatLoading}
             style={{
               padding: '10px 18px', borderRadius: 10, border: 'none',
