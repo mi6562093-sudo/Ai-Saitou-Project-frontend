@@ -729,11 +729,11 @@ function App() {
               background: C.bgElevated, borderRadius: 8, padding: '4px 10px',
               fontSize: 13, color: C.text,
             }}>
-              \ud83d\udcce {selectedFile.name}
+              {'\u{1F4CE}'} {selectedFile.name}
               <button
                 onClick={() => setSelectedFile(null)}
                 style={{ border: 'none', background: 'none', cursor: 'pointer', color: C.textSecondary, fontSize: 14 }}
-              >\u2715</button>
+              >{'\u2715'}</button>
             </span>
           </div>
         )}
@@ -757,7 +757,7 @@ function App() {
               background: C.bgElevated, color: C.text, cursor: 'pointer', fontSize: 16,
             }}
           >
-            \ud83d\udcce
+            {'\u{1F4CE}'}
           </button>
           <input
             value={input}
