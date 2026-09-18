@@ -318,7 +318,8 @@ function App() {
         return pesanBaru
       })
     } catch (err) {
-      setMessages((prev) => [...prev, { role: 'ai', text: 'Error: gagal mengunggah file ke backend' }])
+      console.error('Gagal upload file:', err)
+      setMessages((prev) => [...prev, { role: 'ai', text: `Error: gagal mengunggah file ke backend (${err.message || err})` }])
     } finally {
       setChatLoading(false)
     }
