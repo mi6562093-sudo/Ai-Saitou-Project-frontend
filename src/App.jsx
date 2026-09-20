@@ -945,9 +945,9 @@ function App() {
             title={jarvisMode ? "Mode JARVIS aktif -- klik buat matikan" : "Mode JARVIS nonaktif -- klik buat aktifkan"}
             style={{
               padding: '10px 12px', borderRadius: 10,
-              border: `1px solid ${jarvisMode ? C.text : C.border}`,
-              background: jarvisMode ? C.text : C.bgElevated,
-              color: jarvisMode ? C.bg : C.text,
+              border: `1px solid ${jarvisMode ? '#dc2626' : C.border}`,
+              background: jarvisMode ? '#dc2626' : C.bgElevated,
+              color: jarvisMode ? '#ffffff' : C.text,
               cursor: 'pointer', fontSize: 13, fontWeight: 'bold',
             }}
           >
