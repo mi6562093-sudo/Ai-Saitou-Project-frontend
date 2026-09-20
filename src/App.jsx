@@ -918,7 +918,7 @@ function App() {
           </div>
         )}
         <div style={{
-          display: 'flex', gap: 8, padding: '12px 16px',
+          display: 'flex', flexDirection: 'column', gap: 8, padding: '12px 16px',
           borderTop: `1px solid ${C.border}`, background: C.bg,
           flexShrink: 0, boxSizing: 'border-box',
         }}>
@@ -928,53 +928,57 @@ function App() {
             onChange={handlePilihFile}
             style={{ display: 'none' }}
           />
-          <button
-            onClick={() => fileInputRef.current && fileInputRef.current.click()}
-            disabled={chatLoading}
-            title="Lampirkan file"
-            style={{
-              padding: '10px 12px', borderRadius: 10, border: `1px solid ${C.border}`,
-              background: C.bgElevated, color: C.text, cursor: 'pointer', fontSize: 16,
-            }}
-          >
-            {'\u{1F4CE}'}
-          </button>
-          <button
-            onClick={() => setJarvisMode((prev) => !prev)}
-            disabled={chatLoading}
-            title={jarvisMode ? "Mode JARVIS aktif -- klik buat matikan" : "Mode JARVIS nonaktif -- klik buat aktifkan"}
-            style={{
-              padding: '10px 12px', borderRadius: 10,
-              border: `1px solid ${jarvisMode ? '#dc2626' : C.border}`,
-              background: jarvisMode ? '#dc2626' : C.bgElevated,
-              color: jarvisMode ? '#ffffff' : C.text,
-              cursor: 'pointer', fontSize: 13, fontWeight: 'bold',
-            }}
-          >
-            {'\u26A1'} JARVIS
-          </button>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleKirim()}
             placeholder={selectedFile ? "Tulis instruksi soal file ini (opsional)..." : (jarvisMode ? "Minta JARVIS kerjain sesuatu..." : "Tulis pesan...")}
             style={{
-              flex: 1, padding: '10px 14px', fontSize: 15,
-              borderRadius: 10, border: `1px solid ${C.border}`,
-              outline: 'none', fontFamily: 'sans-serif',
+              width: '100%', padding: '12px 14px', fontSize: 15,
+              borderRadius: 14, border: `1px solid ${C.border}`,
+              outline: 'none', fontFamily: 'sans-serif', boxSizing: 'border-box',
             }}
           />
-          <button
-            onClick={handleKirim}
-            disabled={chatLoading}
-            style={{
-              padding: '10px 18px', borderRadius: 10, border: 'none',
-              background: C.text, color: C.bg, cursor: 'pointer',
-              fontWeight: 'bold', fontSize: 14,
-            }}
-          >
-            Kirim
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                onClick={() => fileInputRef.current && fileInputRef.current.click()}
+                disabled={chatLoading}
+                title="Lampirkan file"
+                style={{
+                  padding: '10px 12px', borderRadius: 10, border: `1px solid ${C.border}`,
+                  background: C.bgElevated, color: C.text, cursor: 'pointer', fontSize: 16,
+                }}
+              >
+                {'\u{1F4CE}'}
+              </button>
+              <button
+                onClick={() => setJarvisMode((prev) => !prev)}
+                disabled={chatLoading}
+                title={jarvisMode ? "Mode JARVIS aktif -- klik buat matikan" : "Mode JARVIS nonaktif -- klik buat aktifkan"}
+                style={{
+                  padding: '10px 12px', borderRadius: 10,
+                  border: `1px solid ${jarvisMode ? '#dc2626' : C.border}`,
+                  background: jarvisMode ? '#dc2626' : C.bgElevated,
+                  color: jarvisMode ? '#ffffff' : C.text,
+                  cursor: 'pointer', fontSize: 13, fontWeight: 'bold',
+                }}
+              >
+                {'\u26A1'} JARVIS
+              </button>
+            </div>
+            <button
+              onClick={handleKirim}
+              disabled={chatLoading}
+              style={{
+                padding: '10px 18px', borderRadius: 10, border: 'none',
+                background: C.text, color: C.bg, cursor: 'pointer',
+                fontWeight: 'bold', fontSize: 14,
+              }}
+            >
+              Kirim
+            </button>
+          </div>
         </div>
       </div>
     </div>
