@@ -61,6 +61,7 @@ function App() {
   const [input, setInput] = useState('')
   const [selectedFile, setSelectedFile] = useState(null)
   const fileInputRef = useRef(null)
+  const [jarvisMode, setJarvisMode] = useState(false)
   const [chatLoading, setChatLoading] = useState(false)
 
   const [typingIndex, setTypingIndex] = useState(null)
@@ -328,9 +329,64 @@ function App() {
     }
   }
 
+  async function sendMessageAgentTanpaFile() {
+    if (!input.trim()) return
+    const pesanUser = input
+    setInput('')
+
+    setMessages((prev) => [...prev, { role: 'user', text: pesanUser }])
+    setChatLoading(true)
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/agent`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session.access_token}`,
+          },
+          body: JSON.stringify({
+            user_id: session.user.id,
+            objective: pesanUser,
+          }),
+        }
+      )
+      if (res.status === 401 || res.status === 403) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'Sesi login kamu sudah tidak valid. Coba logout lalu login lagi ya.' }])
+        return
+      }
+      if (res.status === 429) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'Kamu mengirim pesan terlalu cepat. Tunggu sebentar ya sebelum kirim lagi.' }])
+        return
+      }
+      const data = await res.json()
+      let jawabanBaru
+      if (data.status === 'completed') {
+        jawabanBaru = data.ringkasan || 'Selesai, tapi tidak ada ringkasan hasil.'
+      } else if (data.status === 'failed') {
+        jawabanBaru = data.ringkasan || (data.alasan ? `Gagal: ${data.alasan}` : 'Gagal memproses (alasan tidak diketahui).')
+      } else {
+        jawabanBaru = data.pesan || 'Terjadi kesalahan saat memproses permintaan.'
+      }
+      setMessages((prev) => {
+        const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru }]
+        setTypingIndex(pesanBaru.length - 1)
+        setTypedChars(0)
+        return pesanBaru
+      })
+    } catch (err) {
+      console.error('Gagal jalankan JARVIS:', err)
+      setMessages((prev) => [...prev, { role: 'ai', text: `Error: gagal menjalankan JARVIS (${err.message || err})` }])
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
   function handleKirim() {
     if (selectedFile) {
       sendMessageDenganFile()
+    } else if (jarvisMode) {
+      sendMessageAgentTanpaFile()
     } else {
       sendMessage()
     }
@@ -883,11 +939,25 @@ function App() {
           >
             {'\u{1F4CE}'}
           </button>
+          <button
+            onClick={() => setJarvisMode((prev) => !prev)}
+            disabled={chatLoading}
+            title={jarvisMode ? "Mode JARVIS aktif -- klik buat matikan" : "Mode JARVIS nonaktif -- klik buat aktifkan"}
+            style={{
+              padding: '10px 12px', borderRadius: 10,
+              border: `1px solid ${jarvisMode ? C.text : C.border}`,
+              background: jarvisMode ? C.text : C.bgElevated,
+              color: jarvisMode ? C.bg : C.text,
+              cursor: 'pointer', fontSize: 13, fontWeight: 'bold',
+            }}
+          >
+            {'\u26A1'} JARVIS
+          </button>
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleKirim()}
-            placeholder={selectedFile ? "Tulis instruksi soal file ini (opsional)..." : "Tulis pesan..."}
+            placeholder={selectedFile ? "Tulis instruksi soal file ini (opsional)..." : (jarvisMode ? "Minta JARVIS kerjain sesuatu..." : "Tulis pesan...")}
             style={{
               flex: 1, padding: '10px 14px', fontSize: 15,
               borderRadius: 10, border: `1px solid ${C.border}`,
