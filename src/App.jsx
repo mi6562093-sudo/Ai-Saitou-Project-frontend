@@ -4,7 +4,7 @@ import { mintaIzinDanAmbilToken, dengarkanNotifikasiForeground } from './firebas
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
-const BACKEND_URL = "https://ai-saitou-project-production.up.railway.app"
+const BACKEND_URL = "https://ai-saitou-project.vercel.app"
 const supabase = createClient(
   "https://kvhoirxniciekdctsxta.supabase.co",
   "sb_publishable_XEnH5zPGF0xG48FuKnC3Wg_jWXKKzgA"
