@@ -5,23 +5,6 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
 const BACKEND_URL = "https://ai-saitou-project.vercel.app"
-
-// Selama efek ketik, penanda markdown berpasangan sering baru separuh
-// muncul (** sudah keluar, penutupnya belum). ReactMarkdown tidak mengenali
-// itu sebagai tebal, jadi bintangnya tampil mentah di layar. Penanda yang
-// jumlahnya ganjil dipotong dulu beserta teks setelahnya, supaya kata itu
-// muncul sedikit terlambat tapi tanpa simbol.
-function sembunyikanPenandaBelumLengkap(teks) {
-  let hasil = teks
-  for (const tanda of ['**', '`']) {
-    const bagian = hasil.split(tanda)
-    if (bagian.length > 1 && (bagian.length - 1) % 2 === 1) {
-      bagian.pop()
-      hasil = bagian.join(tanda)
-    }
-  }
-  return hasil
-}
 const supabase = createClient(
   "https://kvhoirxniciekdctsxta.supabase.co",
   "sb_publishable_XEnH5zPGF0xG48FuKnC3Wg_jWXKKzgA"
@@ -900,7 +883,7 @@ function App() {
               }}>
                 {m.role === 'ai' ? (
                   i === typingIndex && !m.text.includes('|') ? (
-                    <span><ReactMarkdown remarkPlugins={[remarkGfm]}>{sembunyikanPenandaBelumLengkap(m.text.slice(0, typedChars))}</ReactMarkdown><span className="typing-cursor">▌</span></span>
+                    <span><ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text.slice(0, typedChars)}</ReactMarkdown><span className="typing-cursor">▌</span></span>
                   ) : (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
