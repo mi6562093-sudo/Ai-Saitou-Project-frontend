@@ -71,6 +71,7 @@ function App() {
   const [regenerating, setRegenerating] = useState(false)
   const KARAKTER_PER_TICK = 1
   const KECEPATAN_KETIK_MS = 20
+  const BATAS_EFEK_KETIK = 700
 
   const messagesEndRef = useRef(null)
 
@@ -81,6 +82,10 @@ function App() {
   useEffect(() => {
     if (typingIndex === null) return
     const teksLengkap = messages[typingIndex]?.text || ''
+    if (teksLengkap.length >= BATAS_EFEK_KETIK) {
+      setTypingIndex(null)
+      return
+    }
     if (typedChars >= teksLengkap.length) {
       setTypingIndex(null)
       return
@@ -882,7 +887,7 @@ function App() {
                 lineHeight: 1.5,
               }}>
                 {m.role === 'ai' ? (
-                  i === typingIndex && m.text.length < 700 ? (
+                  i === typingIndex && m.text.length < BATAS_EFEK_KETIK ? (
                     <span style={{ whiteSpace: 'pre-wrap' }}>{m.text.slice(0, typedChars)}<span className="typing-cursor">▌</span></span>
                   ) : (
                   <ReactMarkdown
