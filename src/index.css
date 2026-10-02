@@ -156,14 +156,3 @@ code {
 .fade-in-message {
   animation: fade-in-message 0.35s ease-out;
 }
-
-/* Pesan bertabel melewati efek ketik, jadi kemunculannya dibuat lebih
-   lambat dan jaraknya lebih jauh. Tanpa ini tabel besar terasa menyentak
-   karena durasi 0.35s dirancang untuk gelembung teks pendek. */
-@keyframes fade-in-tabel {
-  from { opacity: 0; transform: translateY(14px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.fade-in-tabel {
-  animation: fade-in-tabel 0.9s cubic-bezier(0.16, 1, 0.3, 1);
-}
