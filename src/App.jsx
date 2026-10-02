@@ -882,7 +882,7 @@ function App() {
                 lineHeight: 1.5,
               }}>
                 {m.role === 'ai' ? (
-                  i === typingIndex ? (
+                  i === typingIndex && m.text.length < 700 ? (
                     <span style={{ whiteSpace: 'pre-wrap' }}>{m.text.slice(0, typedChars)}<span className="typing-cursor">▌</span></span>
                   ) : (
                   <ReactMarkdown
