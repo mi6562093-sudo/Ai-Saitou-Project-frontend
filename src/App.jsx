@@ -883,7 +883,7 @@ function App() {
               }}>
                 {m.role === 'ai' ? (
                   i === typingIndex ? (
-                    <span style={{ whiteSpace: 'pre-wrap' }}>{m.text.slice(0, typedChars)}<span className="typing-cursor">▌</span></span>
+                    <span><ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text.slice(0, typedChars)}</ReactMarkdown><span className="typing-cursor">▌</span></span>
                   ) : (
                   <ReactMarkdown
                     remarkPlugins={[remarkGfm]}
