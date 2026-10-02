@@ -867,7 +867,7 @@ function App() {
           {messages.map((m, i) => (
             <div key={i} style={{ textAlign: m.role === 'user' ? 'right' : 'left', margin: '10px 0' }}>
               <div
-                className={m.role === 'ai' ? 'fade-in-message' : ''}
+                className={m.role === 'ai' ? (m.text.includes('|') ? 'fade-in-tabel' : 'fade-in-message') : ''}
                 style={{
                 display: 'inline-block',
                 padding: '10px 14px',
@@ -882,7 +882,7 @@ function App() {
                 lineHeight: 1.5,
               }}>
                 {m.role === 'ai' ? (
-                  i === typingIndex ? (
+                  i === typingIndex && !m.text.includes('|') ? (
                     <span><ReactMarkdown remarkPlugins={[remarkGfm]}>{m.text.slice(0, typedChars)}</ReactMarkdown><span className="typing-cursor">▌</span></span>
                   ) : (
                   <ReactMarkdown
