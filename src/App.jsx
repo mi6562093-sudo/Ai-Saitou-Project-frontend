@@ -361,15 +361,32 @@ function App() {
       }
       const data = await res.json()
       let jawabanBaru
+      let persetujuan = null
       if (data.status === 'completed') {
         jawabanBaru = data.ringkasan || 'Selesai, tapi tidak ada ringkasan hasil.'
       } else if (data.status === 'failed') {
         jawabanBaru = data.ringkasan || (data.alasan ? `Gagal: ${data.alasan}` : 'Gagal memproses (alasan tidak diketahui).')
+      } else if (data.status === 'awaiting_approval') {
+        const aksi = data.aksi || {}
+        let rincian = aksi.argumen
+        try {
+          if (typeof rincian === 'string') rincian = JSON.parse(rincian)
+        } catch (e) {
+          // argumen tidak berbentuk JSON, biarkan apa adanya
+        }
+        const barisRincian =
+          rincian && typeof rincian === 'object'
+            ? Object.entries(rincian).map(([k, v]) => `- ${k}: ${v}`).join('\n')
+            : `- ${rincian}`
+        jawabanBaru =
+          'JARVIS mau menjalankan tindakan yang berdampak ke luar, dan itu butuh persetujuan kamu dulu.\n\n' +
+          `**Tindakan:** \`${aksi.nama_tool || 'tidak diketahui'}\`\n\n${barisRincian}`
+        persetujuan = { goal_id: data.goal_id, nama_tool: aksi.nama_tool }
       } else {
         jawabanBaru = data.pesan || 'Terjadi kesalahan saat memproses permintaan.'
       }
       setMessages((prev) => {
-        const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru }]
+        const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru, persetujuan }]
         setTypingIndex(pesanBaru.length - 1)
         setTypedChars(0)
         return pesanBaru
@@ -377,6 +394,54 @@ function App() {
     } catch (err) {
       console.error('Gagal jalankan JARVIS:', err)
       setMessages((prev) => [...prev, { role: 'ai', text: `Error: gagal menjalankan JARVIS (${err.message || err})` }])
+    } finally {
+      setChatLoading(false)
+    }
+  }
+
+  async function putuskanPersetujuan(goalId, setuju, indexPesan) {
+    const jalur = setuju ? 'approve' : 'reject'
+    setChatLoading(true)
+
+    // Tombol dilepas dari pesan itu supaya tidak bisa diklik dua kali
+    setMessages((prev) => prev.map((m, i) => (i === indexPesan ? { ...m, persetujuan: null } : m)))
+
+    try {
+      const res = await fetch(
+        `${BACKEND_URL}/agent/${encodeURIComponent(goalId)}/${jalur}?user_id=${encodeURIComponent(session.user.id)}`,
+        {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session.access_token}` },
+        }
+      )
+      if (res.status === 401 || res.status === 403) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'Sesi login kamu sudah tidak valid. Coba logout lalu login lagi ya.' }])
+        return
+      }
+      if (res.status === 429) {
+        setMessages((prev) => [...prev, { role: 'ai', text: 'Kamu mengirim permintaan terlalu cepat. Tunggu sebentar ya.' }])
+        return
+      }
+      const data = await res.json()
+      let teks
+      if (data.status === 'completed') {
+        teks = data.ringkasan || 'Tindakan dijalankan dan goal selesai.'
+      } else if (data.status === 'cancelled') {
+        teks = data.alasan || 'Tindakan ditolak, goal dihentikan.'
+      } else if (data.status === 'failed') {
+        teks = data.ringkasan || (data.alasan ? `Gagal: ${data.alasan}` : 'Gagal memproses.')
+      } else {
+        teks = data.pesan || 'Tidak ada hasil yang bisa ditampilkan.'
+      }
+      setMessages((prev) => {
+        const pesanBaru = [...prev, { role: 'ai', text: teks }]
+        setTypingIndex(pesanBaru.length - 1)
+        setTypedChars(0)
+        return pesanBaru
+      })
+    } catch (err) {
+      console.error('Gagal kirim keputusan persetujuan:', err)
+      setMessages((prev) => [...prev, { role: 'ai', text: `Error: gagal mengirim keputusan (${err.message || err})` }])
     } finally {
       setChatLoading(false)
     }
@@ -851,6 +916,33 @@ function App() {
                   m.text
                 )}
               </div>
+              {m.role === 'ai' && m.persetujuan && i !== typingIndex && (
+                <div style={{ marginTop: 8, display: 'flex', gap: 8 }}>
+                  <button
+                    onClick={() => putuskanPersetujuan(m.persetujuan.goal_id, true, i)}
+                    disabled={chatLoading}
+                    style={{
+                      padding: '8px 14px', borderRadius: 10, border: 'none',
+                      background: '#16a34a', color: '#ffffff',
+                      cursor: 'pointer', fontSize: 13, fontWeight: 'bold',
+                    }}
+                  >
+                    {'\u2713'} Setujui
+                  </button>
+                  <button
+                    onClick={() => putuskanPersetujuan(m.persetujuan.goal_id, false, i)}
+                    disabled={chatLoading}
+                    style={{
+                      padding: '8px 14px', borderRadius: 10,
+                      border: `1px solid ${C.border}`, background: C.bgElevated,
+                      color: C.text, cursor: 'pointer', fontSize: 13, fontWeight: 'bold',
+                    }}
+                  >
+                    {'\u2715'} Tolak
+                  </button>
+                </div>
+              )}
+
               {m.role === 'ai' && i !== typingIndex && (
                 <div style={{ display: 'flex', gap: 10, marginTop: 4, paddingLeft: 4 }}>
                   <button
