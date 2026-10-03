@@ -156,3 +156,15 @@ code {
 .fade-in-message {
   animation: fade-in-message 0.35s ease-out;
 }
+
+/* Pesan baru muncul perlahan. Kelas ini hanya dipasang pada pesan terakhir
+   (lihat App.jsx), supaya membuka aplikasi tidak membuat seluruh riwayat
+   chat ikut beranimasi bersamaan. */
+@keyframes pesan-muncul {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.fade-in-message {
+  animation: pesan-muncul 600ms ease-out both;
+}
