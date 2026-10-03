@@ -6,9 +6,15 @@ import remarkGfm from 'remark-gfm'
 // TARGET_TICK_TEKS membuat seluruh teks selesai dalam jumlah langkah yang
 // tetap, apa pun panjangnya. Jadi paragraf panjang tidak terasa lebih lambat
 // daripada paragraf pendek, hanya lompatannya lebih besar per langkah.
-const MS_PER_TICK = 24
-const TARGET_TICK_TEKS = 85
+const MS_PER_TICK = 16
+const TARGET_TICK_TEKS = 180
 const JEDA_SEBELUM_TABEL = 200
+// Batas lompatan per tick. Satu berarti benar-benar satu karakter per
+// langkah, dan itu yang paling terasa seperti mengetik. Browser hanya
+// menggambar 60 kali per detik, jadi satu karakter per gambar sudah
+// mentok di 16 milidetik; teks yang sangat panjang karena itu diizinkan
+// maju dua karakter supaya tabel di bawahnya tidak menunggu kelamaan.
+const MAKS_LANGKAH_TEKS = 2
 
 // Pisahkan pesan jadi blok tabel dan blok bukan tabel. Tabel tidak pernah
 // diketik, karena memotong tabel di tengah baris membuat pipa dan tanda hubung
@@ -150,7 +156,7 @@ export default function PesanAI({ teks, C, animasi }) {
 
   const langkahTeks = useMemo(() => {
     const jml = tahapan.filter((t) => !t.tabel).length
-    return Math.max(1, Math.ceil(jml / TARGET_TICK_TEKS))
+    return Math.min(MAKS_LANGKAH_TEKS, Math.max(1, Math.ceil(jml / TARGET_TICK_TEKS)))
   }, [tahapan])
 
   const [iTahap, setITahap] = useState(0)
