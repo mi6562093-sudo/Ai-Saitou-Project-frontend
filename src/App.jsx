@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { mintaIzinDanAmbilToken, dengarkanNotifikasiForeground } from './firebase'
+import PesanAI from './PesanAI'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -884,7 +885,7 @@ function App() {
           {messages.map((m, i) => (
             <div key={i} style={{ textAlign: m.role === 'user' ? 'right' : 'left', margin: '10px 0' }}>
               <div
-                className={m.role === 'ai' && i === messages.length - 1 ? 'fade-in-message' : ''}
+                className=""
                 style={{
                 display: 'inline-block',
                 padding: '10px 14px',
@@ -899,36 +900,11 @@ function App() {
                 lineHeight: 1.5,
               }}>
                 {m.role === 'ai' ? (
-                  i === typingIndex && m.text.length < BATAS_EFEK_KETIK ? (
-                    <span style={{ whiteSpace: 'pre-wrap' }}>{m.text.slice(0, typedChars)}<span className="typing-cursor">▌</span></span>
-                  ) : (
-                  <ReactMarkdown
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      table: ({node, ...props}) => (
-                        <div style={{ overflowX: 'auto', maxWidth: '100%' }}>
-                          <table style={{ borderCollapse: 'collapse', width: 'max-content' }} {...props} />
-                        </div>
-                      ),
-                      th: ({node, style, ...props}) => (
-                        <th style={{ border: `1px solid ${C.border}`, padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top', ...style }} {...props} />
-                      ),
-                      td: ({node, style, ...props}) => (
-                        <td style={{ border: `1px solid ${C.border}`, padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top', ...style }} {...props} />
-                      ),
-                      h1: ({node, ...props}) => <h1 style={{ color: C.text }} {...props} />,
-                      h2: ({node, ...props}) => <h2 style={{ color: C.text }} {...props} />,
-                      h3: ({node, ...props}) => <h3 style={{ color: C.text }} {...props} />,
-                      h4: ({node, ...props}) => <h4 style={{ color: C.text }} {...props} />,
-                      pre: ({node, ...props}) => (
-                        <pre style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', overflowWrap: 'break-word', maxWidth: '100%', background: C.text, color: C.bg, padding: 8, borderRadius: 6 }} {...props} />
-                      ),
-                      code: ({node, ...props}) => (
-                        <code style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-all', overflowWrap: 'break-word' }} {...props} />
-                      ),
-                    }}
-                  >{m.text}</ReactMarkdown>
-                  )
+                  <PesanAI
+                    teks={m.text}
+                    C={C}
+                    animasi={i === messages.length - 1}
+                  />
                 ) : (
                   m.text
                 )}
