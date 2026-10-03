@@ -83,6 +83,7 @@ function App() {
   const [chatLoading, setChatLoading] = useState(false)
   const [menuPesan, setMenuPesan] = useState(null)
   const [pesanPilihTeks, setPesanPilihTeks] = useState(null)
+  const [editTail, setEditTail] = useState(null)
 
   const [typingIndex, setTypingIndex] = useState(null)
   const [typedChars, setTypedChars] = useState(0)
@@ -496,6 +497,30 @@ function App() {
 
   // Memilih seluruh isi gelembung pesan. Setelah terpilih, Chrome
   // memunculkan pegangan seleksi dan bilah salinnya sendiri.
+  // Edit pesan pengirim. Percakapan dimundurkan ke sebelum pesan itu,
+  // dan potongan yang dibuang disisihkan dulu supaya salah tekan masih
+  // bisa dibatalkan. Potongan itu baru dilepas setelah versi barunya
+  // benar-benar dikirim.
+  function mulaiEdit(indeks) {
+    setEditTail({ indeks, potongan: messages.slice(indeks) })
+    setMessages(messages.slice(0, indeks))
+    setInput(messages[indeks].text)
+  }
+
+  function batalEdit() {
+    setInput('')
+    if (!editTail) return
+    setMessages((prev) => [...prev.slice(0, editTail.indeks), ...editTail.potongan])
+    setEditTail(null)
+  }
+
+  // Begitu ada pesan baru masuk di titik yang diedit, versi lamanya sudah
+  // benar-benar tergantikan, jadi tombol Batal tidak berlaku lagi.
+  useEffect(() => {
+    if (!editTail) return
+    if (messages.length > editTail.indeks) setEditTail(null)
+  }, [messages, editTail])
+
   function pilihTeksPesan(indeks) {
     setPesanPilihTeks(indeks)
     // Menunggu satu putaran render, karena gelembungnya baru boleh
@@ -944,6 +969,7 @@ function App() {
               {[
                 ['Salin pesan', () => copyToClipboard(messages[menuPesan.i].text, menuPesan.i)],
                 ['Pilih teks', () => pilihTeksPesan(menuPesan.i)],
+                ['Edit', () => mulaiEdit(menuPesan.i)],
               ].map(([nama, aksi]) => (
                 <button
                   key={nama}
@@ -1111,6 +1137,26 @@ function App() {
             onChange={handlePilihFile}
             style={{ display: 'none' }}
           />
+          {editTail && (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: 8, padding: '8px 12px', borderRadius: 12,
+              background: C.bgElevated, border: `1px solid ${C.border}`,
+            }}>
+              <span style={{ fontSize: 13, color: C.textSecondary }}>
+                Sedang mengedit pesan
+              </span>
+              <button
+                onClick={batalEdit}
+                style={{
+                  border: 'none', background: 'none', color: C.text,
+                  fontSize: 13, fontWeight: 'bold', cursor: 'pointer', padding: 2,
+                }}
+              >
+                Batal
+              </button>
+            </div>
+          )}
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
