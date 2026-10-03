@@ -2,6 +2,23 @@ import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@supabase/supabase-js'
 import { mintaIzinDanAmbilToken, dengarkanNotifikasiForeground } from './firebase'
 import PesanAI from './PesanAI'
+
+// Pembatalan permintaan. Pembatalnya disimpan di tingkat modul supaya
+// pembungkus fetch dan tombol stop berbagi satu benda yang sama, tanpa
+// perlu diteruskan lewat parameter ke setiap pemanggil.
+let pembatalAktif = null
+
+function fetchBisaBatal(url, opsi) {
+  pembatalAktif = new AbortController()
+  return fetch(url, { ...(opsi || {}), signal: pembatalAktif.signal })
+}
+
+function batalkanPermintaanAktif() {
+  if (!pembatalAktif) return false
+  pembatalAktif.abort()
+  pembatalAktif = null
+  return true
+}
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 
@@ -198,6 +215,7 @@ function App() {
             { method: 'POST', headers: { 'Authorization': `Bearer ${session.access_token}` } }
           )
         } catch (err) {
+          if (err && err.name === 'AbortError') return
           console.error('Gagal simpan device token:', err)
         }
       }
@@ -259,7 +277,7 @@ function App() {
     setMessages((prev) => [...prev, { role: 'user', text: pesanUser }])
     setChatLoading(true)
     try {
-      const res = await fetch(
+      const res = await fetchBisaBatal(
         `${BACKEND_URL}/chat`,
         {
           method: 'POST',
@@ -291,6 +309,7 @@ function App() {
         return pesanBaru
       })
     } catch (err) {
+      if (err && err.name === 'AbortError') return
       setMessages((prev) => [...prev, { role: 'ai', text: 'Error: gagal menghubungi backend' }])
     } finally {
       setChatLoading(false)
@@ -311,7 +330,7 @@ function App() {
       formData.append('objective', pesanUser)
       formData.append('file', fileTerpilih)
 
-      const res = await fetch(
+      const res = await fetchBisaBatal(
         `${BACKEND_URL}/agent/upload`,
         {
           method: 'POST',
@@ -338,6 +357,7 @@ function App() {
         return pesanBaru
       })
     } catch (err) {
+      if (err && err.name === 'AbortError') return
       console.error('Gagal upload file:', err)
       setMessages((prev) => [...prev, { role: 'ai', text: `Error: gagal mengunggah file ke backend (${err.message || err})` }])
     } finally {
@@ -353,7 +373,7 @@ function App() {
     setMessages((prev) => [...prev, { role: 'user', text: pesanUser }])
     setChatLoading(true)
     try {
-      const res = await fetch(
+      const res = await fetchBisaBatal(
         `${BACKEND_URL}/agent`,
         {
           method: 'POST',
@@ -386,6 +406,7 @@ function App() {
         return pesanBaru
       })
     } catch (err) {
+      if (err && err.name === 'AbortError') return
       console.error('Gagal jalankan JARVIS:', err)
       setMessages((prev) => [...prev, { role: 'ai', text: `Error: gagal menjalankan JARVIS (${err.message || err})` }])
     } finally {
@@ -432,7 +453,7 @@ function App() {
     setMessages((prev) => prev.map((m, i) => (i === indexPesan ? { ...m, persetujuan: null } : m)))
 
     try {
-      const res = await fetch(
+      const res = await fetchBisaBatal(
         `${BACKEND_URL}/agent/${encodeURIComponent(goalId)}/${jalur}?user_id=${encodeURIComponent(session.user.id)}`,
         {
           method: 'POST',
@@ -458,11 +479,17 @@ function App() {
         return pesanBaru
       })
     } catch (err) {
+      if (err && err.name === 'AbortError') return
       console.error('Gagal kirim keputusan persetujuan:', err)
       setMessages((prev) => [...prev, { role: 'ai', text: `Error: gagal mengirim keputusan (${err.message || err})` }])
     } finally {
       setChatLoading(false)
     }
+  }
+
+  function hentikanPermintaan() {
+    batalkanPermintaanAktif()
+    setChatLoading(false)
   }
 
   function handleKirim() {
@@ -560,6 +587,7 @@ function App() {
         return pesanBaru
       })
     } catch (err) {
+      if (err && err.name === 'AbortError') return
       setMessages((prev) => [...prev, { role: 'ai', text: 'Error: gagal menghubungi backend' }])
     } finally {
       setRegenerating(false)
@@ -576,6 +604,7 @@ function App() {
       const data = await res.json()
       setMemoriList(Array.isArray(data) ? data : [])
     } catch (err) {
+      if (err && err.name === 'AbortError') return
       setMemoriList([])
     } finally {
       setLoadingMemori(false)
@@ -597,6 +626,7 @@ function App() {
       )
       setMemoriList((prev) => prev.filter((m) => m.id !== memoriId))
     } catch (err) {
+      if (err && err.name === 'AbortError') return
       alert('Gagal menghapus memori')
     }
   }
@@ -1053,15 +1083,16 @@ function App() {
               </button>
             </div>
             <button
-              onClick={handleKirim}
-              disabled={chatLoading}
+              onClick={chatLoading ? hentikanPermintaan : handleKirim}
               style={{
                 padding: '10px 18px', borderRadius: 10, border: 'none',
-                background: C.text, color: C.bg, cursor: 'pointer',
+                background: chatLoading ? '#dc2626' : C.text,
+                color: chatLoading ? '#ffffff' : C.bg,
+                cursor: 'pointer',
                 fontWeight: 'bold', fontSize: 14,
               }}
             >
-              Kirim
+              {chatLoading ? 'Stop' : 'Kirim'}
             </button>
           </div>
         </div>
