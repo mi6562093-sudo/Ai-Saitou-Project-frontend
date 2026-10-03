@@ -82,6 +82,7 @@ function App() {
   const [jarvisMode, setJarvisMode] = useState(false)
   const [chatLoading, setChatLoading] = useState(false)
   const [menuPesan, setMenuPesan] = useState(null)
+  const [pesanPilihTeks, setPesanPilihTeks] = useState(null)
 
   const [typingIndex, setTypingIndex] = useState(null)
   const [typedChars, setTypedChars] = useState(0)
@@ -496,13 +497,18 @@ function App() {
   // Memilih seluruh isi gelembung pesan. Setelah terpilih, Chrome
   // memunculkan pegangan seleksi dan bilah salinnya sendiri.
   function pilihTeksPesan(indeks) {
-    const el = document.querySelector('[data-pesan="' + indeks + '"]')
-    if (!el) return
-    const rentang = document.createRange()
-    rentang.selectNodeContents(el)
-    const pilihan = window.getSelection()
-    pilihan.removeAllRanges()
-    pilihan.addRange(rentang)
+    setPesanPilihTeks(indeks)
+    // Menunggu satu putaran render, karena gelembungnya baru boleh
+    // diseleksi setelah keadaan di atas ikut terpasang.
+    setTimeout(() => {
+      const el = document.querySelector('[data-pesan="' + indeks + '"]')
+      if (!el) return
+      const rentang = document.createRange()
+      rentang.selectNodeContents(el)
+      const pilihan = window.getSelection()
+      pilihan.removeAllRanges()
+      pilihan.addRange(rentang)
+    }, 0)
   }
 
   function handleKirim() {
@@ -928,9 +934,9 @@ function App() {
             <div
               style={{
                 position: 'fixed', zIndex: 41,
-                left: Math.max(8, Math.min(menuPesan.x, window.innerWidth - 208)),
+                left: Math.max(8, Math.min(menuPesan.x, window.innerWidth - 212)),
                 top: Math.max(8, Math.min(menuPesan.y, window.innerHeight - 140)),
-                width: 200, padding: 6, borderRadius: 12,
+                width: 200, boxSizing: 'border-box', padding: 6, borderRadius: 12,
                 background: C.bgElevated, border: `1px solid ${C.border}`,
                 boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
               }}
@@ -968,10 +974,18 @@ function App() {
                 onContextMenu={(e) => {
                   if (m.role !== 'user') return
                   e.preventDefault()
+                  if (window.getSelection) window.getSelection().removeAllRanges()
                   setMenuPesan({ i, x: e.clientX, y: e.clientY })
                 }}
                 style={{
                 display: 'inline-block',
+                // Gelembung pesan pengirim dibuat tidak bisa diseleksi, supaya
+                // tekan-tahan tidak memblok kata dan tidak memicu bilah pencarian
+                // Chrome. Larangan ini dilepas khusus untuk pesan yang sedang
+                // dipilih lewat menu Pilih teks.
+                userSelect: m.role === 'user' && pesanPilihTeks !== i ? 'none' : 'text',
+                WebkitUserSelect: m.role === 'user' && pesanPilihTeks !== i ? 'none' : 'text',
+                WebkitTouchCallout: 'none',
                 padding: '10px 14px',
                 borderRadius: 14,
                 background: m.role === 'user' ? C.bubbleUserBg : C.bgElevated,
