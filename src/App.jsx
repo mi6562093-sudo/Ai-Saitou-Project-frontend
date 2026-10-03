@@ -402,7 +402,7 @@ function App() {
           : `- ${rincian}`
       const teks =
         'JARVIS mau menjalankan tindakan yang berdampak ke luar, dan itu butuh persetujuan kamu dulu.\n\n' +
-        `**Tindakan:** \`${aksi.nama_tool || 'tidak diketahui'}\`\n\n${barisRincian}`
+        `**Tindakan:** ${aksi.label || aksi.nama_tool || 'tindakan tidak diketahui'}\n\n${barisRincian}`
       return { teks, persetujuan: { goal_id: data.goal_id, nama_tool: aksi.nama_tool } }
     }
     return { teks: data.pesan || `Terjadi kesalahan saat memproses ${konteks}.`, persetujuan: null }
