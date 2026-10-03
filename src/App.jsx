@@ -71,7 +71,13 @@ function App() {
   const [regenerating, setRegenerating] = useState(false)
   const KARAKTER_PER_TICK = 1
   const KECEPATAN_KETIK_MS = 20
-  const BATAS_EFEK_KETIK = 700
+  // Efek ketik per karakter dimatikan. Selama teks dipotong di tengah, markdown
+  // yang belum lengkap ikut tercetak apa adanya, jadi simbol seperti ** dan |
+  // sempat terlihat sebelum pesan jadi bentuk akhirnya. Batas 0 membuat syarat
+  // m.text.length < BATAS_EFEK_KETIK selalu salah, sehingga setiap pesan
+  // langsung dirender penuh oleh ReactMarkdown. Ubah kembali ke angka positif
+  // kalau efek ketik mau dihidupkan lagi.
+  const BATAS_EFEK_KETIK = 0
 
   const messagesEndRef = useRef(null)
 
