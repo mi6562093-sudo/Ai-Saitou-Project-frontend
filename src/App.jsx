@@ -82,7 +82,16 @@ function App() {
   const messagesEndRef = useRef(null)
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    const keBawah = () =>
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+
+    keBawah()
+
+    // Geser ulang setelah tata letak mengendap. Untuk pesan panjang, sasaran
+    // geseran dihitung saat tabel belum selesai diukur, jadi geseran pertama
+    // berhenti sebelum dasar. Geseran kedua menutup sisanya.
+    const tungguTataLetak = setTimeout(keBawah, 500)
+    return () => clearTimeout(tungguTataLetak)
   }, [messages, chatLoading, typedChars])
 
   useEffect(() => {
