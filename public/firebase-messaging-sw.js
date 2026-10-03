@@ -12,10 +12,8 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-messaging.onBackgroundMessage((payload) => {
-  const judul = payload.notification.title;
-  const opsi = {
-    body: payload.notification.body,
-  };
-  self.registration.showNotification(judul, opsi);
-});
+// Pesan FCM yang punya blok "notification" ditampilkan otomatis oleh SDK.
+// Jangan tambahkan onBackgroundMessage + showNotification di sini: SDK tetap
+// memanggil handler itu SETELAH menampilkan sendiri, jadi notifikasinya dobel.
+// Baris firebase.messaging() di atas tetap wajib ada, itu yang memasang
+// penangan push bawaan SDK.
