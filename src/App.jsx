@@ -518,7 +518,8 @@ function App() {
   // benar-benar tergantikan, jadi tombol Batal tidak berlaku lagi.
   useEffect(() => {
     if (!editTail) return
-    if (messages.length > editTail.indeks) setEditTail(null)
+    const diPosisiItu = messages[editTail.indeks]
+    if (diPosisiItu && diPosisiItu.role === 'user') setEditTail(null)
   }, [messages, editTail])
 
   function pilihTeksPesan(indeks) {
@@ -969,7 +970,7 @@ function App() {
               {[
                 ['Salin pesan', () => copyToClipboard(messages[menuPesan.i].text, menuPesan.i)],
                 ['Pilih teks', () => pilihTeksPesan(menuPesan.i)],
-                ['Edit', () => mulaiEdit(menuPesan.i)],
+                ...(chatLoading ? [] : [['Edit', () => mulaiEdit(menuPesan.i)]]),
               ].map(([nama, aksi]) => (
                 <button
                   key={nama}
