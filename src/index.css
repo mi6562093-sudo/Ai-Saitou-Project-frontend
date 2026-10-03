@@ -166,5 +166,5 @@ code {
      jadi pesannya tidak sempat muncul di luar pandangan. Setelah animasi
      selesai elemen kembali normal, tidak menahan keadaan animasi.
      Kalau geseran masih memotong animasi, naikkan angka jeda ini saja. */
-  animation: pesan-muncul 650ms ease-out 350ms backwards;
+  animation: pesan-muncul 1200ms ease-out 350ms backwards;
 }
