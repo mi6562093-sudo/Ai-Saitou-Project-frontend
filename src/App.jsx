@@ -81,6 +81,7 @@ function App() {
   const fileInputRef = useRef(null)
   const [jarvisMode, setJarvisMode] = useState(false)
   const [chatLoading, setChatLoading] = useState(false)
+  const [menuPesan, setMenuPesan] = useState(null)
 
   const [typingIndex, setTypingIndex] = useState(null)
   const [typedChars, setTypedChars] = useState(0)
@@ -490,6 +491,18 @@ function App() {
   function hentikanPermintaan() {
     batalkanPermintaanAktif()
     setChatLoading(false)
+  }
+
+  // Memilih seluruh isi gelembung pesan. Setelah terpilih, Chrome
+  // memunculkan pegangan seleksi dan bilah salinnya sendiri.
+  function pilihTeksPesan(indeks) {
+    const el = document.querySelector('[data-pesan="' + indeks + '"]')
+    if (!el) return
+    const rentang = document.createRange()
+    rentang.selectNodeContents(el)
+    const pilihan = window.getSelection()
+    pilihan.removeAllRanges()
+    pilihan.addRange(rentang)
   }
 
   function handleKirim() {
@@ -906,6 +919,41 @@ function App() {
           <span style={{ fontFamily: 'Georgia, serif', fontWeight: 'bold', fontSize: 17, color: C.text }}>Saitou-AI</span>
         </div>
 
+        {menuPesan && (
+          <>
+            <div
+              onClick={() => setMenuPesan(null)}
+              style={{ position: 'fixed', inset: 0, zIndex: 40 }}
+            />
+            <div
+              style={{
+                position: 'fixed', zIndex: 41,
+                left: Math.max(8, Math.min(menuPesan.x, window.innerWidth - 208)),
+                top: Math.max(8, Math.min(menuPesan.y, window.innerHeight - 140)),
+                width: 200, padding: 6, borderRadius: 12,
+                background: C.bgElevated, border: `1px solid ${C.border}`,
+                boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+              }}
+            >
+              {[
+                ['Salin pesan', () => copyToClipboard(messages[menuPesan.i].text, menuPesan.i)],
+                ['Pilih teks', () => pilihTeksPesan(menuPesan.i)],
+              ].map(([nama, aksi]) => (
+                <button
+                  key={nama}
+                  onClick={() => { aksi(); setMenuPesan(null) }}
+                  style={{
+                    display: 'block', width: '100%', textAlign: 'left',
+                    padding: '11px 12px', border: 'none', background: 'none',
+                    color: C.text, fontSize: 15, cursor: 'pointer', borderRadius: 8,
+                  }}
+                >
+                  {nama}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
         <div style={{ flex: 1, overflowY: 'auto', padding: '16px', boxSizing: 'border-box' }}>
           {messages.length === 0 && (
             <div style={{ textAlign: 'center', color: C.textSecondary, marginTop: 60, fontSize: 14 }}>
@@ -916,6 +964,12 @@ function App() {
             <div key={i} style={{ textAlign: m.role === 'user' ? 'right' : 'left', margin: '10px 0' }}>
               <div
                 className=""
+                data-pesan={i}
+                onContextMenu={(e) => {
+                  if (m.role !== 'user') return
+                  e.preventDefault()
+                  setMenuPesan({ i, x: e.clientX, y: e.clientY })
+                }}
                 style={{
                 display: 'inline-block',
                 padding: '10px 14px',
