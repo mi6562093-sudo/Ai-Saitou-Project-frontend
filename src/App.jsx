@@ -312,16 +312,11 @@ function App() {
         return
       }
       const data = await res.json()
-      let jawabanBaru
-      if (data.status === 'completed') {
-        jawabanBaru = data.ringkasan || 'Selesai, tapi tidak ada ringkasan hasil.'
-      } else if (data.status === 'failed') {
-        jawabanBaru = data.ringkasan || (data.alasan ? `Gagal memproses file: ${data.alasan}` : 'Gagal memproses file (alasan tidak diketahui).')
-      } else {
-        jawabanBaru = data.pesan || 'Terjadi kesalahan saat memproses file.'
-      }
+      const hasil = bacaBalasanAgent(data, 'file')
+      const jawabanBaru = hasil.teks
+      const persetujuan = hasil.persetujuan
       setMessages((prev) => {
-        const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru }]
+        const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru, persetujuan }]
         setTypingIndex(pesanBaru.length - 1)
         setTypedChars(0)
         return pesanBaru
@@ -365,31 +360,9 @@ function App() {
         return
       }
       const data = await res.json()
-      let jawabanBaru
-      let persetujuan = null
-      if (data.status === 'completed') {
-        jawabanBaru = data.ringkasan || 'Selesai, tapi tidak ada ringkasan hasil.'
-      } else if (data.status === 'failed') {
-        jawabanBaru = data.ringkasan || (data.alasan ? `Gagal: ${data.alasan}` : 'Gagal memproses (alasan tidak diketahui).')
-      } else if (data.status === 'awaiting_approval') {
-        const aksi = data.aksi || {}
-        let rincian = aksi.argumen
-        try {
-          if (typeof rincian === 'string') rincian = JSON.parse(rincian)
-        } catch (e) {
-          // argumen tidak berbentuk JSON, biarkan apa adanya
-        }
-        const barisRincian =
-          rincian && typeof rincian === 'object'
-            ? Object.entries(rincian).map(([k, v]) => `- ${k}: ${v}`).join('\n')
-            : `- ${rincian}`
-        jawabanBaru =
-          'JARVIS mau menjalankan tindakan yang berdampak ke luar, dan itu butuh persetujuan kamu dulu.\n\n' +
-          `**Tindakan:** \`${aksi.nama_tool || 'tidak diketahui'}\`\n\n${barisRincian}`
-        persetujuan = { goal_id: data.goal_id, nama_tool: aksi.nama_tool }
-      } else {
-        jawabanBaru = data.pesan || 'Terjadi kesalahan saat memproses permintaan.'
-      }
+      const hasil = bacaBalasanAgent(data, 'permintaan')
+      const jawabanBaru = hasil.teks
+      const persetujuan = hasil.persetujuan
       setMessages((prev) => {
         const pesanBaru = [...prev, { role: 'ai', text: jawabanBaru, persetujuan }]
         setTypingIndex(pesanBaru.length - 1)
@@ -402,6 +375,37 @@ function App() {
     } finally {
       setChatLoading(false)
     }
+  }
+
+  function bacaBalasanAgent(data, konteks) {
+    if (data.status === 'completed') {
+      return { teks: data.ringkasan || 'Selesai, tapi tidak ada ringkasan hasil.', persetujuan: null }
+    }
+    if (data.status === 'cancelled') {
+      return { teks: data.alasan || 'Tindakan ditolak, goal dihentikan.', persetujuan: null }
+    }
+    if (data.status === 'failed') {
+      const alasan = data.alasan ? `Gagal: ${data.alasan}` : 'Gagal memproses (alasan tidak diketahui).'
+      return { teks: data.ringkasan || alasan, persetujuan: null }
+    }
+    if (data.status === 'awaiting_approval') {
+      const aksi = data.aksi || {}
+      let rincian = aksi.argumen
+      try {
+        if (typeof rincian === 'string') rincian = JSON.parse(rincian)
+      } catch (e) {
+        // argumen tidak berbentuk JSON, biarkan apa adanya
+      }
+      const barisRincian =
+        rincian && typeof rincian === 'object'
+          ? Object.entries(rincian).map(([k, v]) => `- ${k}: ${v}`).join('\n')
+          : `- ${rincian}`
+      const teks =
+        'JARVIS mau menjalankan tindakan yang berdampak ke luar, dan itu butuh persetujuan kamu dulu.\n\n' +
+        `**Tindakan:** \`${aksi.nama_tool || 'tidak diketahui'}\`\n\n${barisRincian}`
+      return { teks, persetujuan: { goal_id: data.goal_id, nama_tool: aksi.nama_tool } }
+    }
+    return { teks: data.pesan || `Terjadi kesalahan saat memproses ${konteks}.`, persetujuan: null }
   }
 
   async function putuskanPersetujuan(goalId, setuju, indexPesan) {
@@ -428,18 +432,11 @@ function App() {
         return
       }
       const data = await res.json()
-      let teks
-      if (data.status === 'completed') {
-        teks = data.ringkasan || 'Tindakan dijalankan dan goal selesai.'
-      } else if (data.status === 'cancelled') {
-        teks = data.alasan || 'Tindakan ditolak, goal dihentikan.'
-      } else if (data.status === 'failed') {
-        teks = data.ringkasan || (data.alasan ? `Gagal: ${data.alasan}` : 'Gagal memproses.')
-      } else {
-        teks = data.pesan || 'Tidak ada hasil yang bisa ditampilkan.'
-      }
+      const hasil = bacaBalasanAgent(data, 'keputusan')
+      const teks = hasil.teks
+      const persetujuan = hasil.persetujuan
       setMessages((prev) => {
-        const pesanBaru = [...prev, { role: 'ai', text: teks }]
+        const pesanBaru = [...prev, { role: 'ai', text: teks, persetujuan }]
         setTypingIndex(pesanBaru.length - 1)
         setTypedChars(0)
         return pesanBaru
