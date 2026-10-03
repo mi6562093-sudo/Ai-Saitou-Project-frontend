@@ -6,9 +6,9 @@ import remarkGfm from 'remark-gfm'
 // TARGET_TICK_TEKS membuat seluruh teks selesai dalam jumlah langkah yang
 // tetap, apa pun panjangnya. Jadi paragraf panjang tidak terasa lebih lambat
 // daripada paragraf pendek, hanya lompatannya lebih besar per langkah.
-const MS_PER_TICK = 18
-const TARGET_TICK_TEKS = 70
-const JEDA_SEBELUM_TABEL = 150
+const MS_PER_TICK = 24
+const TARGET_TICK_TEKS = 85
+const JEDA_SEBELUM_TABEL = 200
 
 // Pisahkan pesan jadi blok tabel dan blok bukan tabel. Tabel tidak pernah
 // diketik, karena memotong tabel di tengah baris membuat pipa dan tanda hubung
