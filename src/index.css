@@ -149,22 +149,17 @@ code {
   margin-left: 1px;
 }
 
-@keyframes fade-in-message {
-  from { opacity: 0; transform: translateY(6px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-.fade-in-message {
-  animation: fade-in-message 0.35s ease-out;
-}
-
 /* Pesan baru muncul perlahan. Kelas ini hanya dipasang pada pesan terakhir
-   (lihat App.jsx), supaya membuka aplikasi tidak membuat seluruh riwayat
-   chat ikut beranimasi bersamaan. */
+   (lihat App.jsx), supaya membuka aplikasi tidak membuat seluruh riwayat chat
+   ikut beranimasi bersamaan.
+
+   Tanpa fill mode, supaya elemen kembali ke keadaan normal setelah animasi
+   selesai dan tidak menahan keadaan animasi selamanya. */
 @keyframes pesan-muncul {
   from { opacity: 0; transform: translateY(8px); }
-  to   { opacity: 1; transform: none; }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 .fade-in-message {
-  animation: pesan-muncul 600ms ease-out both;
+  animation: pesan-muncul 600ms ease-out;
 }

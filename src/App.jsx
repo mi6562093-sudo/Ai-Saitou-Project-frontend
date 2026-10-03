@@ -901,11 +901,11 @@ function App() {
                           <table style={{ borderCollapse: 'collapse', width: 'max-content' }} {...props} />
                         </div>
                       ),
-                      th: ({node, ...props}) => (
-                        <th style={{ border: `1px solid ${C.border}`, padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top' }} {...props} />
+                      th: ({node, style, ...props}) => (
+                        <th style={{ border: `1px solid ${C.border}`, padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top', ...style }} {...props} />
                       ),
-                      td: ({node, ...props}) => (
-                        <td style={{ border: `1px solid ${C.border}`, padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top' }} {...props} />
+                      td: ({node, style, ...props}) => (
+                        <td style={{ border: `1px solid ${C.border}`, padding: '4px 8px', whiteSpace: 'nowrap', verticalAlign: 'top', ...style }} {...props} />
                       ),
                       h1: ({node, ...props}) => <h1 style={{ color: C.text }} {...props} />,
                       h2: ({node, ...props}) => <h2 style={{ color: C.text }} {...props} />,
